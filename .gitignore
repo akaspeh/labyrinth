@@ -2,3 +2,5 @@ unix-build
 cmake-build
 build
 .vscode
+CMakeSettings.json
+.vs
