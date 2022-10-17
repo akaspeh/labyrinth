@@ -8,7 +8,7 @@ file(GLOB_RECURSE EXECUTABLE_SRC
     ${LABYRINTH_SRC_DIRS}/*.cpp
     )
 
-add_executable(Labyrinth ${EXECUTABLE_SRC})
+add_executable(Labyrinth ${EXECUTABLE_SRC} "src/Labyrinth/Maze.h" "src/Labyrinth/Maze.cpp")
 
 target_include_directories(Labyrinth 
     PUBLIC ${LABYRINTH_INCLUDE_DIRS}
