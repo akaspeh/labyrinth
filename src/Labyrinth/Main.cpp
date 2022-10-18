@@ -7,7 +7,7 @@ int main()
 {
 	std::unique_ptr<Application> application = std::make_unique<Application>();
 	application->run();
-	Maze m(4, 4);
-
-	m.ShowMaze();
+	
+	Maze maze(40, 10);
+	maze.ShowMaze();
 }

@@ -1,63 +1,15 @@
 #include "Maze.h"
 
-Maze::Maze(int width, int height)
-	: maze_width_(width), maze_height_(height), visited_cells_(1)
+Maze::Maze(int maze_width, int maze_height)
+	: maze_width_(maze_width), maze_height_(maze_height)
 {
 	maze_ = new Cell[maze_width_ * maze_height_];
-
-	maze_stack_.push({ 0,0 });
-	maze_[0].is_visited = true;
-
 	CreateMaze();
 }
 
 Maze::~Maze()
 {
 	delete[] maze_;
-}
-
-void Maze::ShowMaze()
-{
-	std::string paths = "";
-
-	std::cout << "\t";
-	for (int i = 0; i < maze_width_; i++)
-	{
-		std::cout << i << "\t";
-	}
-
-	std::cout << std::endl;
-
-	for (int i = 0; i < maze_height_; i++)
-	{
-		std::cout << i << "\t";
-
-		for (int j = 0; j < maze_width_; j++)
-		{
-			if (maze_[i * maze_width_ + j].path_north == true)
-			{
-				paths += 'N';
-			}
-			if (maze_[i * maze_width_ + j].path_east == true)
-			{
-				paths += 'E';
-			}
-			if (maze_[i * maze_width_ + j].path_south == true)
-			{
-				paths += 'S';
-			}
-			if (maze_[i * maze_width_ + j].path_west == true)
-			{
-				paths += 'W';
-			}
-
-			std::cout << paths << "\t";
-
-			paths = "";
-		}
-
-		std::cout << std::endl;
-	}
 }
 
 void Maze::CreateMaze()
@@ -70,45 +22,52 @@ void Maze::CreateMaze()
 		WEST
 	};
 
+	std::stack<std::pair<int, int>> maze_stack;
+
+	maze_stack.push({ 0,0 });
+	maze_[0].is_visited = true;
+
+	int visited_cells = 1;
+
 	auto delta_pos = [&](int x, int y)
 	{
-		return (maze_stack_.top().second + y) * maze_width_ + (maze_stack_.top().first + x);
+		return (maze_stack.top().second + y) * maze_width_ + (maze_stack.top().first + x);
 	};
 
 	std::vector<Direction> neighbours;
 
-	while (visited_cells_ < maze_width_ * maze_height_)
+	while (visited_cells < maze_width_ * maze_height_)
 	{
 		// North neighbour
-		if (maze_stack_.top().second > 0 && maze_[delta_pos(0, -1)].is_visited == false)
+		if (maze_stack.top().second > 0 && maze_[delta_pos(0, -1)].is_visited == false)
 		{
 			neighbours.push_back(Direction::NORTH);
 		}
 
 		// East neighbour
-		if (maze_stack_.top().first < maze_width_ - 1 && maze_[delta_pos(1, 0)].is_visited == false)
+		if (maze_stack.top().first < maze_width_ - 1 && maze_[delta_pos(1, 0)].is_visited == false)
 		{
 			neighbours.push_back(Direction::EAST);
 		}
 
 		// South neighbour
-		if (maze_stack_.top().second < maze_height_ - 1 && maze_[delta_pos(0, 1)].is_visited == false)
+		if (maze_stack.top().second < maze_height_ - 1 && maze_[delta_pos(0, 1)].is_visited == false)
 		{
 			neighbours.push_back(Direction::SOUTH);
 		}
 
 		// West neighbour
-		if (maze_stack_.top().first > 0 && maze_[delta_pos(-1, 0)].is_visited == false)
+		if (maze_stack.top().first > 0 && maze_[delta_pos(-1, 0)].is_visited == false)
 		{
 			neighbours.push_back(Direction::WEST);
 		}
 
 		if (!neighbours.empty())
 		{
-			Direction dir = neighbours[GenerateRandIntInRange(0, neighbours.size() - 1)];
+			Direction dir = neighbours[GenerateRandIntInRange(0, static_cast<std::vector<Direction, std::allocator<Direction>>::size_type>(neighbours.size()) - 1)];
 
 			maze_[delta_pos(0, 0)].is_visited = true;
-			++visited_cells_;
+			++visited_cells;
 
 			switch (dir)
 			{
@@ -116,25 +75,25 @@ void Maze::CreateMaze()
 				maze_[delta_pos(0, 0)].path_north = true;
 				maze_[delta_pos(0, -1)].path_south = true;
 				maze_[delta_pos(0, -1)].is_visited = true;
-				maze_stack_.push({ maze_stack_.top().first, maze_stack_.top().second - 1 });
+				maze_stack.push({ maze_stack.top().first, maze_stack.top().second - 1 });
 				break;
 			case Direction::EAST:
 				maze_[delta_pos(0, 0)].path_east = true;
 				maze_[delta_pos(1, 0)].path_west = true;
 				maze_[delta_pos(1, 0)].is_visited = true;
-				maze_stack_.push({ maze_stack_.top().first + 1, maze_stack_.top().second });
+				maze_stack.push({ maze_stack.top().first + 1, maze_stack.top().second });
 				break;
 			case Direction::SOUTH:
 				maze_[delta_pos(0, 0)].path_south = true;
 				maze_[delta_pos(0, 1)].path_north = true;
 				maze_[delta_pos(0, 1)].is_visited = true;
-				maze_stack_.push({ maze_stack_.top().first, maze_stack_.top().second + 1 });
+				maze_stack.push({ maze_stack.top().first, maze_stack.top().second + 1 });
 				break;
 			case Direction::WEST:
 				maze_[delta_pos(0, 0)].path_west = true;
 				maze_[delta_pos(-1, 0)].path_east = true;
 				maze_[delta_pos(-1, 0)].is_visited = true;
-				maze_stack_.push({ maze_stack_.top().first - 1, maze_stack_.top().second });
+				maze_stack.push({ maze_stack.top().first - 1, maze_stack.top().second });
 				break;
 			default:
 				break;
@@ -144,7 +103,71 @@ void Maze::CreateMaze()
 		}
 		else
 		{
-			maze_stack_.pop();
+			maze_stack.pop();
+		}
+	}
+}
+
+void Maze::ShowMaze()
+{
+	for (int i = 0; i < maze_height_; i++)
+	{
+		for (int k = 0; k < 3; k++)
+		{
+			std::cout << "#";
+
+			for (int j = 0; j < maze_width_; j++)
+			{
+				Cell* curr = &maze_[i * maze_width_ + j];
+
+				switch (k)
+				{
+				case 0:
+					if (!curr->path_north)
+					{
+						std::cout << "###";
+					}
+					else
+					{
+						std::cout << "# #";
+					}
+					break;
+				case 1:
+					if (!curr->path_east && curr->path_west)
+					{
+						std::cout << "  #";
+					}
+					else if (curr->path_east && !curr->path_west)
+					{
+						std::cout << "#  ";
+					}
+					else if (!curr->path_east && !curr->path_west)
+					{
+						std::cout << "# #";
+					}
+					else
+					{
+						std::cout << "   ";
+					}
+					break;
+				case 2:
+					if (!curr->path_south)
+					{
+						std::cout << "###";
+					}
+					else
+					{
+						std::cout << "# #";
+					}
+					break;
+				default:
+					break;
+				}
+			}
+
+			std::cout << "#";
+
+			std::cout << std::endl;
 		}
 	}
 }

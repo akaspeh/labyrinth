@@ -8,6 +8,12 @@
 
 class Maze
 {
+public:
+	Maze(int maze_width, int maze_height);
+	~Maze();
+
+	void ShowMaze();
+
 private:
 	struct Cell
 	{
@@ -17,19 +23,10 @@ private:
 		bool path_west = false;
 		bool is_visited = false;
 	};
-public:
-	Maze(int width, int height);
-	~Maze();
 
-	void ShowMaze();
-
-private:
+	Cell* maze_;
 	int maze_width_;
 	int maze_height_;
-	Cell* maze_;
-
-	int visited_cells_;
-	std::stack<std::pair<int, int>> maze_stack_;
 
 	void CreateMaze();
 	int GenerateRandIntInRange(int from, int to);
