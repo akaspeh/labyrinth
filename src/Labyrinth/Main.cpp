@@ -7,5 +7,5 @@ int main()
 {
 	std::unique_ptr<Application> application = std::make_unique<Application>();
 	application->run();
-	Maze m(20, 30);
+	Maze m(5, 5);
 }

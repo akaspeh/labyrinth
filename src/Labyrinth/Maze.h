@@ -23,8 +23,8 @@ private:
 	int maze_height_;
 	Cell* maze_;
 
-	std::stack<std::pair<int, int>> maze_stack_;
 	int visited_cells_;
+	std::stack<std::pair<int, int>> maze_stack_;
 
 	void CreateMaze();
 };
