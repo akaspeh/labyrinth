@@ -1,7 +1,10 @@
 #pragma once
 #include <iostream>
+
 #include <stack>
 #include <vector>
+
+#include <random>
 
 class Maze
 {
@@ -18,6 +21,8 @@ public:
 	Maze(int width, int height);
 	~Maze();
 
+	void ShowMaze();
+
 private:
 	int maze_width_;
 	int maze_height_;
@@ -27,4 +32,5 @@ private:
 	std::stack<std::pair<int, int>> maze_stack_;
 
 	void CreateMaze();
+	int GenerateRandIntInRange(int from, int to);
 };
