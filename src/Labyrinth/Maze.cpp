@@ -22,6 +22,7 @@ void Maze::CreateMaze()
 		WEST
 	};
 
+	// pair (x, y) - position in the grid
 	std::stack<std::pair<int, int>> maze_stack;
 
 	maze_stack.push({ 0,0 });
@@ -29,6 +30,7 @@ void Maze::CreateMaze()
 
 	int visited_cells = 1;
 
+	// for calculating the position of neighbours
 	auto delta_pos = [&](int x, int y)
 	{
 		return (maze_stack.top().second + y) * maze_width_ + (maze_stack.top().first + x);
@@ -64,7 +66,7 @@ void Maze::CreateMaze()
 
 		if (!neighbours.empty())
 		{
-			Direction dir = neighbours[GenerateRandIntInRange(0, static_cast<std::vector<Direction, std::allocator<Direction>>::size_type>(neighbours.size()) - 1)];
+			Direction dir = neighbours[GenerateRandIntInRange(0, neighbours.size() - 1)];
 
 			maze_[delta_pos(0, 0)].is_visited = true;
 			++visited_cells;
@@ -110,6 +112,10 @@ void Maze::CreateMaze()
 
 void Maze::ShowMaze()
 {
+	// k = 0 -	###	\
+	// k = 1 -	# #	- entire cell spans 3 rows
+	// k = 2 -	###	/
+
 	for (int i = 0; i < maze_height_; i++)
 	{
 		for (int k = 0; k < 3; k++)
