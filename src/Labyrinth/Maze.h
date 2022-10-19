@@ -9,7 +9,7 @@
 class Maze
 {
 public:
-	Maze(int maze_width, int maze_height);
+	Maze(int mazeWidth, int mazeHeight);
 	~Maze();
 
 	void ShowMaze();
@@ -17,17 +17,17 @@ public:
 private:
 	struct Cell
 	{
-		bool path_north = false;
-		bool path_east = false;
-		bool path_south = false;
-		bool path_west = false;
-		bool is_visited = false;
+		bool m_bPathNorth = false;
+		bool m_bPathEast = false;
+		bool m_bPathSouth = false;
+		bool m_bPathWest = false;
+		bool m_isVisited = false;
 	};
 
-	Cell* maze_;
-	int maze_width_;
-	int maze_height_;
+	Cell* m_pMaze;
+	int m_iMazeWidth;
+	int m_iMazeHeight;
 
 	void CreateMaze();
-	int GenerateRandIntInRange(int from, int to);
+	static int GenerateRandIntInRange(int from, int to);
 };
