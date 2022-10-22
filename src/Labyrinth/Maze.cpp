@@ -1,5 +1,9 @@
 #include "Maze.h"
 
+#include <algorithm>
+
+#include "Vec2.h"
+
 Maze::Maze(int mazeWidth, int mazeHeight)
 	: m_iMazeWidth(mazeWidth), m_iMazeHeight(mazeHeight)
 {
@@ -14,16 +18,8 @@ Maze::~Maze()
 
 void Maze::CreateMaze()
 {
-	enum class Direction
-	{
-		NORTH,
-		EAST,
-		SOUTH,
-		WEST
-	};
-
 	// pair (x, y) - position in the grid
-	std::stack<std::pair<int, int>> mazeStack;
+	std::stack<Vec2> mazeStack;
 
 	mazeStack.push({ 0,0 });
 	m_pMaze[0].m_isVisited = true;
@@ -33,7 +29,7 @@ void Maze::CreateMaze()
 	// for calculating the position of neighbours
 	auto offset = [&](int x, int y)
 	{
-		return (mazeStack.top().second + y) * m_iMazeWidth + (mazeStack.top().first + x);
+		return (mazeStack.top().y + y) * m_iMazeWidth + (mazeStack.top().x + x);
 	};
 
 	std::vector<Direction> neighbours;
@@ -41,25 +37,25 @@ void Maze::CreateMaze()
 	while (visitedCells < m_iMazeWidth * m_iMazeHeight)
 	{
 		// North neighbour
-		if (mazeStack.top().second > 0 && m_pMaze[offset(0, -1)].m_isVisited == false)
+		if (mazeStack.top().y > 0 && m_pMaze[offset(0, -1)].m_isVisited == false)
 		{
 			neighbours.push_back(Direction::NORTH);
 		}
 
 		// East neighbour
-		if (mazeStack.top().first < m_iMazeWidth - 1 && m_pMaze[offset(1, 0)].m_isVisited == false)
+		if (mazeStack.top().x < m_iMazeWidth - 1 && m_pMaze[offset(1, 0)].m_isVisited == false)
 		{
 			neighbours.push_back(Direction::EAST);
 		}
 
 		// South neighbour
-		if (mazeStack.top().second < m_iMazeHeight - 1 && m_pMaze[offset(0, 1)].m_isVisited == false)
+		if (mazeStack.top().y < m_iMazeHeight - 1 && m_pMaze[offset(0, 1)].m_isVisited == false)
 		{
 			neighbours.push_back(Direction::SOUTH);
 		}
 
 		// West neighbour
-		if (mazeStack.top().first > 0 && m_pMaze[offset(-1, 0)].m_isVisited == false)
+		if (mazeStack.top().x > 0 && m_pMaze[offset(-1, 0)].m_isVisited == false)
 		{
 			neighbours.push_back(Direction::WEST);
 		}
@@ -77,25 +73,25 @@ void Maze::CreateMaze()
 				m_pMaze[offset(0, 0)].m_bPathNorth = true;
 				m_pMaze[offset(0, -1)].m_bPathSouth = true;
 				m_pMaze[offset(0, -1)].m_isVisited = true;
-				mazeStack.push({ mazeStack.top().first, mazeStack.top().second - 1 });
+				mazeStack.push({ mazeStack.top().x, mazeStack.top().y - 1 });
 				break;
 			case Direction::EAST:
 				m_pMaze[offset(0, 0)].m_bPathEast = true;
 				m_pMaze[offset(1, 0)].m_bPathWest = true;
 				m_pMaze[offset(1, 0)].m_isVisited = true;
-				mazeStack.push({ mazeStack.top().first + 1, mazeStack.top().second });
+				mazeStack.push({ mazeStack.top().x + 1, mazeStack.top().y });
 				break;
 			case Direction::SOUTH:
 				m_pMaze[offset(0, 0)].m_bPathSouth = true;
 				m_pMaze[offset(0, 1)].m_bPathNorth = true;
 				m_pMaze[offset(0, 1)].m_isVisited = true;
-				mazeStack.push({ mazeStack.top().first, mazeStack.top().second + 1 });
+				mazeStack.push({ mazeStack.top().x, mazeStack.top().y + 1 });
 				break;
 			case Direction::WEST:
 				m_pMaze[offset(0, 0)].m_bPathWest = true;
 				m_pMaze[offset(-1, 0)].m_bPathEast = true;
 				m_pMaze[offset(-1, 0)].m_isVisited = true;
-				mazeStack.push({ mazeStack.top().first - 1, mazeStack.top().second });
+				mazeStack.push({ mazeStack.top().x - 1, mazeStack.top().y });
 				break;
 			default:
 				break;
@@ -110,7 +106,7 @@ void Maze::CreateMaze()
 	}
 }
 
-void Maze::ShowMaze()
+void Maze::ShowMaze(const std::vector<Vec2>& path)
 {
 	// k = 0 -	###	\
 	// k = 1 -	# #	- entire cell spans 3 rows
@@ -125,7 +121,8 @@ void Maze::ShowMaze()
 			for (int j = 0; j < m_iMazeWidth; j++)
 			{
 				Cell* curr = &m_pMaze[i * m_iMazeWidth + j];
-
+				// Bad code, should be rewritten
+				bool pathWay = std::find(path.begin(), path.end(), Vec2{j, i}) != path.end();
 				switch (k)
 				{
 				case 0:
@@ -135,25 +132,25 @@ void Maze::ShowMaze()
 					}
 					else
 					{
-						std::cout << "# #";
+						std::cout << (pathWay ? "#0#" : "# #");
 					}
 					break;
 				case 1:
 					if (!curr->m_bPathEast && curr->m_bPathWest)
 					{
-						std::cout << "  #";
+						std::cout << (pathWay ? " 0#" : "  #");
 					}
 					else if (curr->m_bPathEast && !curr->m_bPathWest)
 					{
-						std::cout << "#  ";
+						std::cout << (pathWay ? "#0 " : "#  ");
 					}
 					else if (!curr->m_bPathEast && !curr->m_bPathWest)
 					{
-						std::cout << "# #";
+						std::cout << (pathWay ? "#0#" : "# #");
 					}
 					else
 					{
-						std::cout << "   ";
+						std::cout << (pathWay ? " 0 " : "   ");
 					}
 					break;
 				case 2:
@@ -163,7 +160,7 @@ void Maze::ShowMaze()
 					}
 					else
 					{
-						std::cout << "# #";
+						std::cout << (pathWay ? "#0#" : "# #");
 					}
 					break;
 				default:
