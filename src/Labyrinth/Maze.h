@@ -8,40 +8,50 @@
 
 #include "Vec2.h"
 
-struct Cell
-{
-	bool m_bPathNorth = false;
-	bool m_bPathEast = false;
-	bool m_bPathSouth = false;
-	bool m_bPathWest = false;
-	bool m_isVisited = false;
-};
-
 enum class Direction
 {
-	NORTH,
-	EAST,
-	SOUTH,
-	WEST
+    NORTH = 0b1000,
+    EAST = 0b0100,
+    SOUTH = 0b0010,
+    WEST = 0b0001
+};
+
+class Cell
+{
+public:
+    Cell() : m_cellNode(0) {}
+    ~Cell() = default;
+
+    constexpr void breakWall(const Direction dir) { m_cellNode |= static_cast<uint8_t>(dir); }
+    constexpr bool hasPath(const Direction dir) { return (m_cellNode & static_cast<uint8_t>(dir)) == static_cast<uint8_t>(dir); }
+
+    constexpr void setVisited() { m_cellNode |= 0b10000; }
+    constexpr bool isVisited() const { return (m_cellNode & 0b10000) == 0b10000; }
+
+    constexpr uint8_t getValue() const { return m_cellNode & 0b1111; }
+
+private:
+    uint8_t m_cellNode;
 };
 
 class Maze
 {
 public:
-	Maze(int mazeWidth, int mazeHeight);
-	~Maze();
+    Maze(size_t mazeWidth, size_t mazeHeight);
+    ~Maze() { delete[] m_pMaze; }
 
-	// This should be rewritten using std::stringstream?
-	void ShowMaze(const std::vector<Vec2>& path);
+    void ShowMaze();
 
-	inline Cell* Data() { return m_pMaze; }
-	inline Vec2 Dimensions() const { return Vec2{m_iMazeWidth, m_iMazeHeight}; } 
+    inline Cell* Data() { return m_pMaze; }
+    inline Vec2 Dimensions() const { return Vec2{ static_cast<int>(m_mazeWidth), static_cast<int>(m_mazeHeight) }; }
 
 private:
-	Cell* m_pMaze;
-	int m_iMazeWidth;
-	int m_iMazeHeight;
 
-	void CreateMaze();
-	static int GenerateRandIntInRange(int from, int to);
+private:
+    size_t m_mazeWidth;
+    size_t m_mazeHeight;
+    Cell* m_pMaze;
+
+    void CreateMaze();
+    static int generateRandInt(int from, int to);
 };

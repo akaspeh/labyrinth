@@ -20,7 +20,7 @@ std::vector<Vec2> Pathfinder::pathfind(const Vec2& start, const Vec2& goal, cons
     m_closedList.resize(sz, false);
 
     m_pathList[toIndex1D(start)].parent = start; // assign start parent to start so we could recreate the path
-    m_openList.push(Node{.pos = start}); // just assign pos, everything else is zero-initialized
+    m_openList.push(Node{ .pos = start }); // just assign pos, everything else is zero-initialized
     Vec2 currentPos;
 
     while (!m_openList.empty())
@@ -49,7 +49,7 @@ std::vector<Vec2> Pathfinder::pathfind(const Vec2& start, const Vec2& goal, cons
             uint32_t neighborF = m_pathList[index].g + m_pathList[index].h;
             if (neighborF == 0 || f < neighborF)
             {
-                Node n = {neighborPos, currentPos, g, h};
+                Node n = { neighborPos, currentPos, g, h };
                 m_openList.push(n);
                 m_pathList[index] = n;
             }
@@ -85,12 +85,12 @@ bool Pathfinder::isWall(Vec2& parent, Vec2& neighbor) const
     // now, when we got a direction, we can check if we can move from parent to neighbor
     Cell& cell = m_data[toIndex1D(parent)];
     bool r = true;
-    if (delta == Vec2{0, -1})
-        r = !cell.m_bPathNorth;
-    else if (delta == Vec2{1, 0})
-        r = !cell.m_bPathEast;
-    else if (delta == Vec2{0, 1})
-        r = !cell.m_bPathSouth;
-    else r = !cell.m_bPathWest;
+    if (delta == Vec2{ 0, -1 })
+        r = !cell.hasPath(Direction::NORTH);
+    else if (delta == Vec2{ 1, 0 })
+        r = !cell.hasPath(Direction::EAST);
+    else if (delta == Vec2{ 0, 1 })
+        r = !cell.hasPath(Direction::SOUTH);
+    else r = !cell.hasPath(Direction::WEST);
     return r;
 }
