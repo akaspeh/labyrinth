@@ -5,7 +5,6 @@
 struct Vec2
 {
 public:
-    Vec2() = default;
     ~Vec2() = default;
 
     int32_t x{};
@@ -21,7 +20,7 @@ public:
     inline static Vec2 Delta(const Vec2& lhs, const Vec2& rhs) { return {lhs.x - rhs.x, lhs.y - rhs.y}; }
 
     // https://en.wikipedia.org/wiki/Taxicab_geometry
-    inline static constexpr uint32_t Manhattan(const Vec2& lhs, const Vec2& rhs)
+    inline static uint32_t Manhattan(const Vec2& lhs, const Vec2& rhs)
     {
         Vec2 delta{ abs(lhs.x - rhs.x), abs(lhs.y - rhs.y)};
         return delta.x + delta.y;
