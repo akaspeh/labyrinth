@@ -6,6 +6,8 @@
 
 #include <random>
 
+#include <optional>
+
 #include "Vec2.h"
 
 enum class Direction
@@ -40,7 +42,8 @@ public:
     Maze(const size_t mazeWidth, const size_t mazeHeight, const int seed = -1);
     ~Maze() { delete[] m_pMaze; }
 
-    void ShowMaze();
+    void ShowMazeText(std::optional<const std::vector<Vec2>*> path = std::nullopt);
+    void ShowMazeTextBold(std::optional<const std::vector<Vec2>*> path = std::nullopt);
 
     inline Cell* Data() { return m_pMaze; }
     inline Vec2 Dimensions() const { return Vec2{ static_cast<int>(m_mazeWidth), static_cast<int>(m_mazeHeight) }; }
