@@ -2,9 +2,12 @@
 
 #include <algorithm>
 
-Maze::Maze(size_t mazeWidth, size_t mazeHeight)
+Maze::Maze(const size_t mazeWidth, const size_t mazeHeight, const int seed)
     : m_mazeWidth(mazeWidth), m_mazeHeight(mazeHeight),
-    m_pMaze(new Cell[m_mazeWidth * m_mazeHeight])
+    m_pMaze(new Cell[mazeWidth * mazeHeight]),
+    m_seed((seed >= 0) ? static_cast<std::random_device::result_type>(seed) : m_randDevice()),
+    m_randGenerator(m_seed)
+
 {
     CreateMaze();
 }
@@ -20,7 +23,7 @@ void Maze::CreateMaze()
     size_t visitedCells = 1;
 
     // for calculating the position of neighbours
-    auto offset = [&](int x, int y)
+    auto offset = [&](const size_t x, const size_t y)
     {
         return (mazeStack.top().y + y) * m_mazeWidth + (mazeStack.top().x + x);
     };
@@ -30,32 +33,32 @@ void Maze::CreateMaze()
     while (visitedCells < m_mazeWidth * m_mazeHeight)
     {
         // North neighbour
-        if (mazeStack.top().y > 0 && m_pMaze[offset(0, -1)].isVisited() == false)
+        if (mazeStack.top().y > 0 && !m_pMaze[offset(0, -1)].isVisited())
         {
             neighbours.push_back(Direction::NORTH);
         }
 
         // East neighbour
-        if (mazeStack.top().x < m_mazeWidth - 1 && m_pMaze[offset(1, 0)].isVisited() == false)
+        if (mazeStack.top().x < m_mazeWidth - 1 && !m_pMaze[offset(1, 0)].isVisited())
         {
             neighbours.push_back(Direction::EAST);
         }
 
         // South neighbour
-        if (mazeStack.top().y < m_mazeHeight - 1 && m_pMaze[offset(0, 1)].isVisited() == false)
+        if (mazeStack.top().y < m_mazeHeight - 1 && !m_pMaze[offset(0, 1)].isVisited())
         {
             neighbours.push_back(Direction::SOUTH);
         }
 
         // West neighbour
-        if (mazeStack.top().x > 0 && m_pMaze[offset(-1, 0)].isVisited() == false)
+        if (mazeStack.top().x > 0 && !m_pMaze[offset(-1, 0)].isVisited())
         {
             neighbours.push_back(Direction::WEST);
         }
 
         if (!neighbours.empty())
         {
-            Direction& dir = neighbours[generateRandInt(0, neighbours.size() - 1)];
+            Direction& dir = neighbours[static_cast<size_t>(GenerateIntInRange(0, static_cast<int>(neighbours.size()) - 1))];
 
             m_pMaze[offset(0, 0)].setVisited();
             ++visitedCells;
@@ -99,11 +102,76 @@ void Maze::CreateMaze()
     }
 }
 
-void Maze::ShowMaze()
+void Maze::ShowMazeText(std::optional<const std::vector<Vec2>*> path)
+{
+    bool pathWay = false;
+
+    auto is_path = [&](const size_t row, const size_t col)
+    {
+        return std::find(path.value()->begin(),
+            path.value()->end(), Vec2{ static_cast<int>(col), static_cast<int>(row) }) != path.value()->end();
+    };
+
+    for (size_t row = 0; row < m_mazeHeight; ++row)
+    {
+        for (size_t col = 0; col < m_mazeWidth; ++col)
+        {
+            if (path.has_value())
+            {
+                pathWay = is_path(row, col);
+            }
+
+            if (pathWay)
+            {
+                std::cout << (!m_pMaze[row * m_mazeWidth + col].hasPath(Direction::NORTH) ? "##" : "#.");
+            }
+            else
+            {
+                std::cout << (!m_pMaze[row * m_mazeWidth + col].hasPath(Direction::NORTH) ? "##" : "# ");
+            }
+
+            pathWay = false;
+        }
+
+        std::cout << "#" << std::endl;
+
+        for (size_t col = 0; col < m_mazeWidth; ++col)
+        {
+            if (path.has_value())
+            {
+                pathWay = is_path(row, col);
+            }
+
+            if (pathWay)
+            {
+                std::cout << (!m_pMaze[row * m_mazeWidth + col].hasPath(Direction::WEST) ? "#." : "..");
+            }
+            else
+            {
+                std::cout << (!m_pMaze[row * m_mazeWidth + col].hasPath(Direction::WEST) ? "# " : "  ");
+            }
+
+            pathWay = false;
+        }
+
+        std::cout << "#" << std::endl;
+    }
+
+    for (size_t col = 0; col < m_mazeWidth; ++col)
+    {
+        std::cout << "##";
+    }
+
+    std::cout << "#" << std::endl;
+}
+
+void Maze::ShowMazeTextBold(std::optional<const std::vector<Vec2>*> path)
 {
     // k = 0 -	###	\
 	// k = 1 -	# #	- entire cell spans 3 rows
     // k = 2 -	###	/
+
+    bool pathWay = false;
 
     for (size_t row = 0; row < m_mazeHeight; ++row)
     {
@@ -114,6 +182,13 @@ void Maze::ShowMaze()
             for (size_t col = 0; col < m_mazeWidth; ++col)
             {
                 Cell& curr = m_pMaze[row * m_mazeWidth + col];
+
+                if (path.has_value())
+                {
+                    pathWay = std::find(path.value()->begin(),
+                        path.value()->end(), Vec2{ static_cast<int>(col), static_cast<int>(row) }) != path.value()->end();;
+                }
+
                 switch (k)
                 {
                 case 0:
@@ -123,25 +198,25 @@ void Maze::ShowMaze()
                     }
                     else
                     {
-                        std::cout << "# #";
+                        std::cout << (pathWay ? "#.#" : "# #");
                     }
                     break;
                 case 1:
                     if (!curr.hasPath(Direction::EAST) && curr.hasPath(Direction::WEST))
                     {
-                        std::cout << "  #";
+                        std::cout << (pathWay ? "..#" : "  #");
                     }
                     else if (curr.hasPath(Direction::EAST) && !curr.hasPath(Direction::WEST))
                     {
-                        std::cout << "#  ";
+                        std::cout << (pathWay ? "#.." : "#  ");
                     }
                     else if (!curr.hasPath(Direction::EAST) && !curr.hasPath(Direction::WEST))
                     {
-                        std::cout << "# #";
+                        std::cout << (pathWay ? "#.#" : "# #");
                     }
                     else
                     {
-                        std::cout << "   ";
+                        std::cout << (pathWay ? "..." : "   ");
                     }
                     break;
                 case 2:
@@ -151,12 +226,14 @@ void Maze::ShowMaze()
                     }
                     else
                     {
-                        std::cout << "# #";
+                        std::cout << (pathWay ? "#.#" : "# #");
                     }
                     break;
                 default:
                     break;
                 }
+
+                pathWay = false;
             }
 
             std::cout << "#";
@@ -166,11 +243,8 @@ void Maze::ShowMaze()
     }
 }
 
-int Maze::generateRandInt(int from, int to)
+int Maze::GenerateIntInRange(int from, int to)
 {
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist6(from, to);
-
-    return dist6(rng);
+    std::uniform_int_distribution<int> randDist(from, to);
+    return randDist(m_randGenerator);
 }
