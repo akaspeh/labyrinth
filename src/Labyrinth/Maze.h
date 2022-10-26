@@ -10,13 +10,6 @@
 
 #include "Vec2.h"
 
-enum class Direction
-{
-    NORTH = 0b1000,
-    EAST = 0b0100,
-    SOUTH = 0b0010,
-    WEST = 0b0001
-};
 
 class Cell
 {
@@ -39,16 +32,21 @@ private:
 class Maze
 {
 public:
+    // We use those aliases, as we probably will rewrite the whole maze system in future
+    using Vec2i = Vec2<int32_t>;
+    using path_container_type = std::vector<Vec2i>; // We should use our own data structure in future, i guess
+    template<typename T> using ref_type = std::reference_wrapper<T>;
+    template<typename T> using cref_type = ref_type<std::add_const_t<T>>;
+
+public:
     Maze(const size_t mazeWidth, const size_t mazeHeight, const int seed = -1);
     ~Maze() { delete[] m_pMaze; }
 
-    void ShowMazeText(std::optional<const std::vector<Vec2>*> path = std::nullopt);
-    void ShowMazeTextBold(std::optional<const std::vector<Vec2>*> path = std::nullopt);
+    void ShowMazeText(std::optional<cref_type<path_container_type>> path = std::nullopt);
+    void ShowMazeTextBold(std::optional<cref_type<path_container_type>> path = std::nullopt);
 
     inline Cell* Data() { return m_pMaze; }
-    inline Vec2 Dimensions() const { return Vec2{ static_cast<int>(m_mazeWidth), static_cast<int>(m_mazeHeight) }; }
-
-private:
+    inline Vec2i Dimensions() const { return Vec2(static_cast<int32_t>(m_mazeWidth), static_cast<int32_t>(m_mazeHeight)); }
 
 private:
     size_t m_mazeWidth;

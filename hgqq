@@ -1,0 +1,429 @@
+[1mdiff --git a/src/Labyrinth/Main.cpp b/src/Labyrinth/Main.cpp[m
+[1mindex d2330f2..1d14e5a 100644[m
+[1m--- a/src/Labyrinth/Main.cpp[m
+[1m+++ b/src/Labyrinth/Main.cpp[m
+[36m@@ -11,22 +11,14 @@[m [mint main()[m
+     maze.ShowMazeTextBold();[m
+ [m
+     Pathfinder finder(maze);[m
+[31m-    std::vector<Vec2> path = finder.pathfind(Vec2{ 0, 0 }, Vec2{ maze.Dimensions().x - 1, maze.Dimensions().y - 1 }, Vec2::Manhattan);[m
+[32m+[m[32m    std::vector<Vec2i> path = finder.pathfind(Vec2i(0), Vec2i(maze.Dimensions().x - 1, maze.Dimensions().y - 1), Vec2i::Manhattan);[m
+ [m
+     std::cout << std::endl << std::endl;[m
+ [m
+[31m-    maze.ShowMazeTextBold(&path);[m
+[32m+[m[32m    maze.ShowMazeTextBold(path);[m
+ [m
+     std::cout << std::endl << std::endl;[m
+ [m
+[31m-    maze.ShowMazeText(&path);[m
+[31m-[m
+[31m-    /*std::cout << std::endl << std::endl;[m
+[31m-[m
+[31m-    for (Vec2& vec : path)[m
+[31m-    {[m
+[31m-        std::cout << vec << std::endl;[m
+[31m-    }*/[m
+[31m-[m
+[32m+[m[32m    maze.ShowMazeText(path);[m
+     return 0;[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/src/Labyrinth/Maze.cpp b/src/Labyrinth/Maze.cpp[m
+[1mindex 077b23b..bc20bd0 100644[m
+[1m--- a/src/Labyrinth/Maze.cpp[m
+[1m+++ b/src/Labyrinth/Maze.cpp[m
+[36m@@ -15,9 +15,9 @@[m [mMaze::Maze(const size_t mazeWidth, const size_t mazeHeight, const int seed)[m
+ void Maze::CreateMaze()[m
+ {[m
+     // pair (x, y) - position in the grid[m
+[31m-    std::stack<Vec2> mazeStack;[m
+[32m+[m[32m    std::stack<Vec2i> mazeStack;[m
+ [m
+[31m-    mazeStack.push({ 0,0 });[m
+[32m+[m[32m    mazeStack.push(Vec2i(0));[m
+     m_pMaze[0].setVisited();[m
+ [m
+     size_t visitedCells = 1;[m
+[36m@@ -102,24 +102,25 @@[m [mvoid Maze::CreateMaze()[m
+     }[m
+ }[m
+ [m
+[31m-void Maze::ShowMazeText(std::optional<const std::vector<Vec2>*> path)[m
+[32m+[m[32mvoid Maze::ShowMazeText(std::optional<Maze::cref_type<Maze::path_container_type>> path)[m
+ {[m
+     bool pathWay = false;[m
+ [m
+[31m-    auto is_path = [&](const size_t row, const size_t col)[m
+[32m+[m[32m    auto is_path = [&](const size_t row, const size_t col) -> bool[m
+     {[m
+[31m-        return std::find(path.value()->begin(),[m
+[31m-            path.value()->end(), Vec2{ static_cast<int>(col), static_cast<int>(row) }) != path.value()->end();[m
+[32m+[m[32m        if (!path.has_value()) // so that the printing part is cleaner[m
+[32m+[m[32m            return false;[m
+[32m+[m
+[32m+[m[32m        const Maze::path_container_type& container = path.value().get();[m
+[32m+[m[32m        Vec2 target = Vec2(static_cast<int32_t>(col), static_cast<int32_t>(row)); // Vector, that we want to find in path[m
+[32m+[m[32m        return std::any_of(container.begin(), container.end(), [&](const Vec2i& v) { return v == target; });[m
+     };[m
+ [m
+     for (size_t row = 0; row < m_mazeHeight; ++row)[m
+     {[m
+         for (size_t col = 0; col < m_mazeWidth; ++col)[m
+         {[m
+[31m-            if (path.has_value())[m
+[31m-            {[m
+[31m-                pathWay = is_path(row, col);[m
+[31m-            }[m
+[32m+[m[32m            pathWay = is_path(row, col);[m
+ [m
+             if (pathWay)[m
+             {[m
+[36m@@ -137,10 +138,7 @@[m [mvoid Maze::ShowMazeText(std::optional<const std::vector<Vec2>*> path)[m
+ [m
+         for (size_t col = 0; col < m_mazeWidth; ++col)[m
+         {[m
+[31m-            if (path.has_value())[m
+[31m-            {[m
+[31m-                pathWay = is_path(row, col);[m
+[31m-            }[m
+[32m+[m[32m            pathWay = is_path(row, col);[m
+ [m
+             if (pathWay)[m
+             {[m
+[36m@@ -165,7 +163,7 @@[m [mvoid Maze::ShowMazeText(std::optional<const std::vector<Vec2>*> path)[m
+     std::cout << "#" << std::endl;[m
+ }[m
+ [m
+[31m-void Maze::ShowMazeTextBold(std::optional<const std::vector<Vec2>*> path)[m
+[32m+[m[32mvoid Maze::ShowMazeTextBold(std::optional<Maze::cref_type<Maze::path_container_type>> path)[m
+ {[m
+     // k = 0 -	###	\[m
+ 	// k = 1 -	# #	- entire cell spans 3 rows[m
+[36m@@ -173,6 +171,16 @@[m [mvoid Maze::ShowMazeTextBold(std::optional<const std::vector<Vec2>*> path)[m
+ [m
+     bool pathWay = false;[m
+ [m
+[32m+[m[32m    auto is_path = [&](const size_t row, const size_t col) -> bool[m
+[32m+[m[32m    {[m
+[32m+[m[32m        if (!path.has_value()) // so that the printing part is cleaner[m
+[32m+[m[32m            return false;[m
+[32m+[m
+[32m+[m[32m        const Maze::path_container_type& container = path.value().get();[m
+[32m+[m[32m        Vec2 target = Vec2(static_cast<int32_t>(col), static_cast<int32_t>(row)); // Vector, that we want to find in path[m
+[32m+[m[32m        return std::any_of(container.begin(), container.end(), [&](const Vec2i& v) { return v == target; });[m
+[32m+[m[32m    };[m
+[32m+[m
+     for (size_t row = 0; row < m_mazeHeight; ++row)[m
+     {[m
+         for (size_t k = 0; k < 3; k++)[m
+[36m@@ -183,11 +191,7 @@[m [mvoid Maze::ShowMazeTextBold(std::optional<const std::vector<Vec2>*> path)[m
+             {[m
+                 Cell& curr = m_pMaze[row * m_mazeWidth + col];[m
+ [m
+[31m-                if (path.has_value())[m
+[31m-                {[m
+[31m-                    pathWay = std::find(path.value()->begin(),[m
+[31m-                        path.value()->end(), Vec2{ static_cast<int>(col), static_cast<int>(row) }) != path.value()->end();;[m
+[31m-                }[m
+[32m+[m[32m                pathWay = is_path(row, col);[m
+ [m
+                 switch (k)[m
+                 {[m
+[1mdiff --git a/src/Labyrinth/Maze.h b/src/Labyrinth/Maze.h[m
+[1mindex fcc2949..2823e65 100644[m
+[1m--- a/src/Labyrinth/Maze.h[m
+[1m+++ b/src/Labyrinth/Maze.h[m
+[36m@@ -10,13 +10,6 @@[m
+ [m
+ #include "Vec2.h"[m
+ [m
+[31m-enum class Direction[m
+[31m-{[m
+[31m-    NORTH = 0b1000,[m
+[31m-    EAST = 0b0100,[m
+[31m-    SOUTH = 0b0010,[m
+[31m-    WEST = 0b0001[m
+[31m-};[m
+ [m
+ class Cell[m
+ {[m
+[36m@@ -38,17 +31,22 @@[m [mprivate:[m
+ [m
+ class Maze[m
+ {[m
+[32m+[m[32mpublic:[m
+[32m+[m[32m    // We use those aliases, as we probably will rewrite the whole maze system in future[m
+[32m+[m[32m    using Vec2i = Vec2<int32_t>;[m
+[32m+[m[32m    using path_container_type = std::vector<Vec2i>; // We should use our own data structure in future, i guess[m
+[32m+[m[32m    template<typename T> using ref_type = std::reference_wrapper<T>;[m
+[32m+[m[32m    template<typename T> using cref_type = ref_type<std::add_const_t<T>>;[m
+[32m+[m
+ public:[m
+     Maze(const size_t mazeWidth, const size_t mazeHeight, const int seed = -1);[m
+     ~Maze() { delete[] m_pMaze; }[m
+ [m
+[31m-    void ShowMazeText(std::optional<const std::vector<Vec2>*> path = std::nullopt);[m
+[31m-    void ShowMazeTextBold(std::optional<const std::vector<Vec2>*> path = std::nullopt);[m
+[32m+[m[32m    void ShowMazeText(std::optional<cref_type<path_container_type>> path = std::nullopt);[m
+[32m+[m[32m    void ShowMazeTextBold(std::optional<cref_type<path_container_type>> path = std::nullopt);[m
+ [m
+     inline Cell* Data() { return m_pMaze; }[m
+[31m-    inline Vec2 Dimensions() const { return Vec2{ static_cast<int>(m_mazeWidth), static_cast<int>(m_mazeHeight) }; }[m
+[31m-[m
+[31m-private:[m
+[32m+[m[32m    inline Vec2i Dimensions() const { return Vec2(static_cast<int32_t>(m_mazeWidth), static_cast<int32_t>(m_mazeHeight)); }[m
+ [m
+ private:[m
+     size_t m_mazeWidth;[m
+[1mdiff --git a/src/Labyrinth/Pathfinding.cpp b/src/Labyrinth/Pathfinding.cpp[m
+[1mindex 1403427..86dc9e8 100644[m
+[1m--- a/src/Labyrinth/Pathfinding.cpp[m
+[1m+++ b/src/Labyrinth/Pathfinding.cpp[m
+[36m@@ -6,13 +6,13 @@[m [mPathfinder::Pathfinder(Maze& maze)[m
+ {[m
+ }[m
+ [m
+[31m-std::vector<Vec2> Pathfinder::pathfind(const Vec2& start, const Vec2& goal, const HeuristicFn& heuristic)[m
+[32m+[m[32mstd::vector<Vec2i> Pathfinder::pathfind(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic)[m
+ {[m
+[31m-    static constexpr Vec2 neighbors[] = {[m
+[31m-        Vec2{ 0, -1}, // NORTH[m
+[31m-        Vec2{ 1,  0}, // EAST[m
+[31m-        Vec2{ 0,  1}, // SOUTH[m
+[31m-        Vec2{-1,  0}, // WEST[m
+[32m+[m[32m    static Vec2i neighbors[] = {[m
+[32m+[m[32m        Vec2i{ 0, -1}, // NORTH[m
+[32m+[m[32m        Vec2i{ 1,  0}, // EAST[m
+[32m+[m[32m        Vec2i{ 0,  1}, // SOUTH[m
+[32m+[m[32m        Vec2i{-1,  0}, // WEST[m
+     };[m
+ [m
+     size_t sz = m_dimensions.x * m_dimensions.y;[m
+[36m@@ -21,7 +21,7 @@[m [mstd::vector<Vec2> Pathfinder::pathfind(const Vec2& start, const Vec2& goal, cons[m
+ [m
+     m_pathList[toIndex1D(start)].parent = start; // assign start parent to start so we could recreate the path[m
+     m_openList.push(Node{ .pos = start }); // just assign pos, everything else is zero-initialized[m
+[31m-    Vec2 currentPos;[m
+[32m+[m[32m    Vec2i currentPos;[m
+ [m
+     while (!m_openList.empty())[m
+     {[m
+[36m@@ -31,21 +31,25 @@[m [mstd::vector<Vec2> Pathfinder::pathfind(const Vec2& start, const Vec2& goal, cons[m
+             break;[m
+         }[m
+ [m
+[32m+[m[32m        // Mark node as closed one (as we just traversed it)[m
+         m_openList.pop();[m
+         m_closedList[toIndex1D(currentPos)] = true;[m
+ [m
+[31m-        for (const Vec2& v : neighbors)[m
+[32m+[m[32m        for (const Vec2i& v : neighbors)[m
+         {[m
+[31m-            Vec2 neighborPos = currentPos + v;[m
+[32m+[m[32m            Vec2i neighborPos = currentPos + v;[m
+             size_t index = toIndex1D(neighborPos);[m
+ [m
+[31m-            if (!isValid(neighborPos) || isWall(currentPos, neighborPos) || m_closedList[index] == true)[m
+[32m+[m[32m            if (!isValid(neighborPos) || isWall(currentPos, neighborPos) || m_closedList[index])[m
+                 continue;[m
+ [m
+[32m+[m[32m            // we count new f, g and h[m
+             uint32_t g = m_pathList[toIndex1D(currentPos)].g + 1;[m
+             uint32_t h = heuristic(neighborPos, goal);[m
+             uint32_t f = g + h;[m
+ [m
+[32m+[m[32m            // if neighbors f == 0 (means we didn't traverse it yet) or is less than our current f[m
+[32m+[m[32m            // then we assign our f to the node and push it into openList[m
+             uint32_t neighborF = m_pathList[index].g + m_pathList[index].h;[m
+             if (neighborF == 0 || f < neighborF)[m
+             {[m
+[36m@@ -59,9 +63,9 @@[m [mstd::vector<Vec2> Pathfinder::pathfind(const Vec2& start, const Vec2& goal, cons[m
+     return recreatePath(goal);[m
+ }[m
+ [m
+[31m-std::vector<Vec2> Pathfinder::recreatePath(const Vec2& goal) const[m
+[32m+[m[32mstd::vector<Vec2i> Pathfinder::recreatePath(const Vec2i& goal) const[m
+ {[m
+[31m-    std::vector<Vec2> path;[m
+[32m+[m[32m    std::vector<Vec2i> path;[m
+ [m
+     Vec2 current = goal;[m
+     size_t index = toIndex1D(current);[m
+[36m@@ -77,20 +81,12 @@[m [mstd::vector<Vec2> Pathfinder::recreatePath(const Vec2& goal) const[m
+     return path;[m
+ }[m
+ [m
+[31m-bool Pathfinder::isWall(Vec2& parent, Vec2& neighbor) const[m
+[32m+[m[32mbool Pathfinder::isWall(Vec2i& parent, Vec2i& neighbor) const[m
+ {[m
+     // I get delta between vector neigbor and parent, based on which I will choose the direction[m
+     // Example: Parent = {0, 1} and Neighbor = {0, 2}. Than Delta = {0, 1}, which is Direction::SOUTH[m
+[31m-    Vec2 delta = Vec2::Delta(neighbor, parent);[m
+[32m+[m[32m    Vec2i delta = Vec2i::Delta(neighbor, parent);[m
+     // now, when we got a direction, we can check if we can move from parent to neighbor[m
+     Cell& cell = m_data[toIndex1D(parent)];[m
+[31m-    bool r = true;[m
+[31m-    if (delta == Vec2{ 0, -1 })[m
+[31m-        r = !cell.hasPath(Direction::NORTH);[m
+[31m-    else if (delta == Vec2{ 1, 0 })[m
+[31m-        r = !cell.hasPath(Direction::EAST);[m
+[31m-    else if (delta == Vec2{ 0, 1 })[m
+[31m-        r = !cell.hasPath(Direction::SOUTH);[m
+[31m-    else r = !cell.hasPath(Direction::WEST);[m
+[31m-    return r;[m
+[32m+[m[32m    return !cell.hasPath((Direction) delta); // we are able to cast vec2 to direction due to vec2 operator()[m
+ }[m
+\ No newline at end of file[m
+[1mdiff --git a/src/Labyrinth/Pathfinding.h b/src/Labyrinth/Pathfinding.h[m
+[1mindex 7b6fbaa..287a0c8 100644[m
+[1m--- a/src/Labyrinth/Pathfinding.h[m
+[1m+++ b/src/Labyrinth/Pathfinding.h[m
+[36m@@ -11,33 +11,37 @@[m
+ [m
+ struct Node[m
+ {[m
+[31m-    Vec2 pos{};[m
+[31m-    Vec2 parent{}; // from which node this one was created[m
+[32m+[m[32m    Vec2i pos = Vec2(0);[m
+[32m+[m[32m    Vec2i parent = Vec2(0); // from which node this one was created[m
+     uint32_t g = 0; // distance from starting node to current[m
+     uint32_t h = 0; // heuristic distance to the goal[m
+ [m
+     inline bool operator<(const Node& rhs) const { return (g + h) < (rhs.g + rhs.h); }[m
+ };[m
+ [m
+[32m+[m[32m/**[m
+[32m+[m[32m * @brief Pathfinder object implementation based on A* algorithm[m[41m [m
+[32m+[m[32m *[m[41m [m
+[32m+[m[32m */[m
+ class Pathfinder[m
+ {[m
+ public:[m
+[31m-    using HeuristicFn = std::function<uint32_t(const Vec2&, const Vec2&)>;[m
+[32m+[m[32m    using HeuristicFn = std::function<uint32_t(const Vec2i&, const Vec2i&)>;[m
+ private:[m
+     std::priority_queue<Node> m_openList;    [m
+     std::vector<Node> m_pathList;[m
+     std::vector<bool> m_closedList;[m
+[31m-    Vec2 m_dimensions;[m
+[32m+[m[32m    Vec2i m_dimensions;[m
+     Cell* m_data;[m
+ [m
+ public:[m
+     Pathfinder(Maze& maze);[m
+     ~Pathfinder() = default;[m
+ [m
+[31m-    std::vector<Vec2> pathfind(const Vec2& start, const Vec2& goal, const HeuristicFn& heuristic);[m
+[32m+[m[32m    std::vector<Vec2i> pathfind(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic);[m
+ private:[m
+[31m-    std::vector<Vec2> recreatePath(const Vec2& goal) const;[m
+[31m-    inline constexpr bool isValid(const Vec2& v) const [m
+[32m+[m[32m    std::vector<Vec2i> recreatePath(const Vec2i& goal) const;[m
+[32m+[m[32m    inline constexpr bool isValid(const Vec2i& v) const[m[41m [m
+     { [m
+         return v.x < m_dimensions.x && v.x >= 0 [m
+             && v.y < m_dimensions.y && v.y >= 0; [m
+[36m@@ -46,9 +50,12 @@[m [mprivate:[m
+     /**[m
+      * @param parent a node's position, from which we will be checking the wall[m
+      * @param neighbor is a move-to node's position, [m
+[32m+[m[32m     *[m[41m [m
+[32m+[m[32m     * undefined behavior if length(neighbor - delta) != 1[m[41m [m
+[32m+[m[32m     *[m[41m [m
+      * @return true if it is possible to move from parent to neigbor[m
+      * @return false if there is no way to move from parent to neighbor[m
+      */[m
+[31m-    bool isWall(Vec2& parent, Vec2& neighbor) const;[m
+[31m-    inline constexpr size_t toIndex1D(const Vec2& v) const { return (v.y * m_dimensions.x) + v.x; };[m
+[32m+[m[32m    bool isWall(Vec2i& parent, Vec2i& neighbor) const;[m
+[32m+[m[32m    inline constexpr size_t toIndex1D(const Vec2i& v) const { return (v.y * m_dimensions.x) + v.x; };[m
+ };[m
+\ No newline at end of file[m
+[1mdiff --git a/src/Labyrinth/Vec2.h b/src/Labyrinth/Vec2.h[m
+[1mindex be7af0e..8202c4a 100644[m
+[1m--- a/src/Labyrinth/Vec2.h[m
+[1m+++ b/src/Labyrinth/Vec2.h[m
+[36m@@ -1,28 +1,69 @@[m
+ #pragma once[m
+ [m
+ #include <cstdint>[m
+[32m+[m[32m#include <unordered_map>[m
+ [m
+[32m+[m[32menum class Direction[m
+[32m+[m[32m{[m
+[32m+[m[32m    NORTH = 0b1000,[m
+[32m+[m[32m    EAST = 0b0100,[m
+[32m+[m[32m    SOUTH = 0b0010,[m
+[32m+[m[32m    WEST = 0b0001,[m
+[32m+[m[32m    UNKNOWN = 0b0000,[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mtemplate<typename T> struct Vec2;[m
+[32m+[m
+[32m+[m[32mtemplate<typename T> struct std::hash<Vec2<T>>[m
+[32m+[m[32m{[m
+[32m+[m[32m    size_t operator()(const Vec2<T>& v) const { return (std::hash<T>{}(v.x) ^ std::hash<T>{}(v.y)); }[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mtemplate<typename T>[m
+ struct Vec2[m
+ {[m
+ public:[m
+[32m+[m[32m    Vec2() = default;[m
+[32m+[m[32m    Vec2(T x, T y) : x(x), y(y) {}[m
+[32m+[m[32m    Vec2(T xy) : x(xy), y(xy) {}[m
+     ~Vec2() = default;[m
+ [m
+[31m-    int32_t x{};[m
+[31m-    int32_t y{};[m
+[32m+[m[32m    union { T x, r; };[m
+[32m+[m[32m    union { T y, g; };[m
+ [m
+[31m-    inline Vec2 operator+(const Vec2& rhs) const { return {x + rhs.x, y + rhs.y}; }[m
+[31m-    inline Vec2 operator-(const Vec2& rhs) const { return (*this) + (-rhs); }[m
+[31m-    inline Vec2 operator-() const { return {-x, -y}; }[m
+[31m-    inline bool operator==(const Vec2& other) const { return x == other.x && y == other.y; }[m
+[31m-    inline bool operator!=(const Vec2& other) const { return !(*this == other); }[m
+[31m-    friend inline std::ostream& operator<<(std::ostream& s, const Vec2& v) { s << v.x << ", " << v.y; return s;}[m
+[32m+[m[32m    Vec2<T> operator+(const Vec2<T>& rhs) const { return {x + rhs.x, y + rhs.y}; }[m
+[32m+[m[32m    Vec2<T> operator-(const Vec2<T>& rhs) const { return (*this) + (-rhs); }[m
+[32m+[m[32m    Vec2<T> operator-() const { return {-x, -y}; }[m
+[32m+[m[32m    bool operator==(const Vec2<T>& other) const { return x == other.x && y == other.y; }[m
+[32m+[m[32m    bool operator!=(const Vec2<T>& other) const { return !(*this == other); }[m
+[32m+[m[41m    [m
+[32m+[m[32m    operator Direction() const // implicit conversion operator[m
+[32m+[m[32m    {[m
+[32m+[m[32m        // We dont want to be able to cast any other type except of Vec2i[m
+[32m+[m[32m        if constexpr(!std::is_same<T, int32_t>::value)[m[41m [m
+[32m+[m[32m            return Direction::UNKNOWN;[m
+ [m
+[31m-    inline static Vec2 Delta(const Vec2& lhs, const Vec2& rhs) { return {lhs.x - rhs.x, lhs.y - rhs.y}; }[m
+[32m+[m[32m        static std::unordered_map<Vec2<int32_t>, Direction> table = {[m
+[32m+[m[32m            { Vec2<int32_t>( 0,  1), Direction::SOUTH },[m
+[32m+[m[32m            { Vec2<int32_t>( 0, -1), Direction::NORTH },[m
+[32m+[m[32m            { Vec2<int32_t>( 1,  0), Direction::EAST },[m
+[32m+[m[32m            { Vec2<int32_t>(-1,  0), Direction::WEST },[m
+[32m+[m[32m        };[m
+[32m+[m[32m        return table.at(*this);[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    static Vec2 Delta(const Vec2& lhs, const Vec2<T>& rhs) { return {lhs.x - rhs.x, lhs.y - rhs.y}; }[m
+ [m
+     // https://en.wikipedia.org/wiki/Taxicab_geometry[m
+[31m-    inline static uint32_t Manhattan(const Vec2& lhs, const Vec2& rhs)[m
+[32m+[m[32m    static uint32_t Manhattan(const Vec2<T>& lhs, const Vec2<T>& rhs)[m
+     {[m
+[31m-        Vec2 delta{ abs(lhs.x - rhs.x), abs(lhs.y - rhs.y)};[m
+[32m+[m[32m        Vec2<T> delta{ abs(lhs.x - rhs.x), abs(lhs.y - rhs.y)};[m
+         return delta.x + delta.y;[m
+     }[m
+[31m-};[m
+\ No newline at end of file[m
+[32m+[m[32m};[m
+[32m+[m
+[32m+[m[32mtemplate<typename T>[m
+[32m+[m[32mstd::ostream& operator<<(std::ostream& s, const Vec2<T>& v) { s << v.x << ", " << v.y; return s;}[m
+[32m+[m
+[32m+[m[32musing Vec2i = Vec2<int32_t>;[m
+[41m+[m
