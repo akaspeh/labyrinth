@@ -15,9 +15,9 @@ Maze::Maze(const size_t mazeWidth, const size_t mazeHeight, const int seed)
 void Maze::CreateMaze()
 {
     // pair (x, y) - position in the grid
-    std::stack<Vec2> mazeStack;
+    std::stack<Vec2i> mazeStack;
 
-    mazeStack.push({ 0,0 });
+    mazeStack.push(Vec2i(0));
     m_pMaze[0].setVisited();
 
     size_t visitedCells = 1;
@@ -102,24 +102,25 @@ void Maze::CreateMaze()
     }
 }
 
-void Maze::ShowMazeText(std::optional<const std::vector<Vec2>*> path)
+void Maze::ShowMazeText(std::optional<Maze::cref_type<Maze::path_container_type>> path)
 {
     bool pathWay = false;
 
-    auto is_path = [&](const size_t row, const size_t col)
+    auto is_path = [&](const size_t row, const size_t col) -> bool
     {
-        return std::find(path.value()->begin(),
-            path.value()->end(), Vec2{ static_cast<int>(col), static_cast<int>(row) }) != path.value()->end();
+        if (!path.has_value()) // so that the printing part is cleaner
+            return false;
+
+        const Maze::path_container_type& container = path.value().get();
+        Vec2 target = Vec2(static_cast<int32_t>(col), static_cast<int32_t>(row)); // Vector, that we want to find in path
+        return std::any_of(container.begin(), container.end(), [&](const Vec2i& v) { return v == target; });
     };
 
     for (size_t row = 0; row < m_mazeHeight; ++row)
     {
         for (size_t col = 0; col < m_mazeWidth; ++col)
         {
-            if (path.has_value())
-            {
-                pathWay = is_path(row, col);
-            }
+            pathWay = is_path(row, col);
 
             if (pathWay)
             {
@@ -137,10 +138,7 @@ void Maze::ShowMazeText(std::optional<const std::vector<Vec2>*> path)
 
         for (size_t col = 0; col < m_mazeWidth; ++col)
         {
-            if (path.has_value())
-            {
-                pathWay = is_path(row, col);
-            }
+            pathWay = is_path(row, col);
 
             if (pathWay)
             {
@@ -165,13 +163,23 @@ void Maze::ShowMazeText(std::optional<const std::vector<Vec2>*> path)
     std::cout << "#" << std::endl;
 }
 
-void Maze::ShowMazeTextBold(std::optional<const std::vector<Vec2>*> path)
+void Maze::ShowMazeTextBold(std::optional<Maze::cref_type<Maze::path_container_type>> path)
 {
     // k = 0 -	###	\
 	// k = 1 -	# #	- entire cell spans 3 rows
     // k = 2 -	###	/
 
     bool pathWay = false;
+
+    auto is_path = [&](const size_t row, const size_t col) -> bool
+    {
+        if (!path.has_value()) // so that the printing part is cleaner
+            return false;
+
+        const Maze::path_container_type& container = path.value().get();
+        Vec2 target = Vec2(static_cast<int32_t>(col), static_cast<int32_t>(row)); // Vector, that we want to find in path
+        return std::any_of(container.begin(), container.end(), [&](const Vec2i& v) { return v == target; });
+    };
 
     for (size_t row = 0; row < m_mazeHeight; ++row)
     {
@@ -183,11 +191,7 @@ void Maze::ShowMazeTextBold(std::optional<const std::vector<Vec2>*> path)
             {
                 Cell& curr = m_pMaze[row * m_mazeWidth + col];
 
-                if (path.has_value())
-                {
-                    pathWay = std::find(path.value()->begin(),
-                        path.value()->end(), Vec2{ static_cast<int>(col), static_cast<int>(row) }) != path.value()->end();;
-                }
+                pathWay = is_path(row, col);
 
                 switch (k)
                 {
