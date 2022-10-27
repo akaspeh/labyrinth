@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "Maze.h"
-#include "Vec2.h"
+
 
 struct Node
 {
