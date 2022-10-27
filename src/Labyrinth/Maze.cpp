@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+
+
 Maze::Maze(const size_t mazeWidth, const size_t mazeHeight, const int seed)
     : m_mazeWidth(mazeWidth), m_mazeHeight(mazeHeight),
     m_pMaze(new Cell[mazeWidth * mazeHeight]),
@@ -14,6 +16,10 @@ Maze::Maze(const size_t mazeWidth, const size_t mazeHeight, const int seed)
 
 void Maze::CreateMaze()
 {
+    if(m_pMaze != nullptr){
+        delete[] m_pMaze;
+        m_pMaze = new Cell[m_mazeWidth * m_mazeHeight];
+    }
     // pair (x, y) - position in the grid
     std::stack<Vec2i> mazeStack;
 
@@ -100,6 +106,11 @@ void Maze::CreateMaze()
             mazeStack.pop();
         }
     }
+}
+
+void Maze::ChangeSize(const size_t mazeWidth, const size_t mazeHeight){
+    m_mazeWidth = mazeWidth;
+    m_mazeHeight = mazeHeight;
 }
 
 void Maze::ShowMazeText(std::optional<Maze::cref_type<Maze::path_container_type>> path)

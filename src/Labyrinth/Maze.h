@@ -7,6 +7,7 @@
 #include <random>
 
 #include <optional>
+#include <utility>
 
 #include "Vec2.h"
 
@@ -39,11 +40,13 @@ public:
     template<typename T> using cref_type = ref_type<std::add_const_t<T>>;
 
 public:
-    Maze(const size_t mazeWidth, const size_t mazeHeight, const int seed = -1);
+    Maze(const size_t mazeWidth = 5, const size_t mazeHeight = 5, const int seed = -1);
     ~Maze() { delete[] m_pMaze; }
 
+    void CreateMaze();
     void ShowMazeText(std::optional<cref_type<path_container_type>> path = std::nullopt);
     void ShowMazeTextBold(std::optional<cref_type<path_container_type>> path = std::nullopt);
+    void ChangeSize(const size_t mazeWidth, const size_t Height);
 
     inline Cell* Data() { return m_pMaze; }
     inline Vec2i Dimensions() const { return Vec2(static_cast<int32_t>(m_mazeWidth), static_cast<int32_t>(m_mazeHeight)); }
@@ -57,6 +60,5 @@ private:
     std::random_device::result_type m_seed;
     std::mt19937 m_randGenerator;
 
-    void CreateMaze();
     int GenerateIntInRange(int from, int to);
 };
