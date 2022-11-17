@@ -1,24 +1,15 @@
 #pragma once
 
 #include <cstdint>
-#include <unordered_map>
-
-enum class Direction
-{
-    NORTH = 0b1000,
-    EAST = 0b0100,
-    SOUTH = 0b0010,
-    WEST = 0b0001,
-    UNKNOWN = 0b0000,
-};
+#include "utility/Direction.h"
 
 template<typename T>
 struct Vec2
 {
 public:
     Vec2() = default;
-    Vec2(T x, T y) : x(x), y(y) {}
-    Vec2(T xy) : x(xy), y(xy) {}
+    constexpr Vec2(T x, T y) : x(x), y(y) {}
+    constexpr Vec2(T xy) : x(xy), y(xy) {}
     ~Vec2() = default;
 
     union { T x, r; };
@@ -30,7 +21,7 @@ public:
     bool operator==(const Vec2<T>& other) const { return x == other.x && y == other.y; }
     bool operator!=(const Vec2<T>& other) const { return !(*this == other); }
     
-    operator Direction() const // implicit conversion operator
+    explicit operator Direction() const
     {
         // We dont want to be able to cast any other type except of Vec2i
         if constexpr(!std::is_same<T, int32_t>::value) 
@@ -44,6 +35,9 @@ public:
             return Direction::EAST;
         else return Direction::WEST;
     }
+
+    template<typename U>
+    explicit operator Vec2<U>() const { return Vec2<U>(static_cast<U>(this->x), static_cast<U>(this->y)); }
 
     static Vec2 Delta(const Vec2& lhs, const Vec2<T>& rhs) { return {lhs.x - rhs.x, lhs.y - rhs.y}; }
 
@@ -59,4 +53,5 @@ template<typename T>
 std::ostream& operator<<(std::ostream& s, const Vec2<T>& v) { s << v.x << ", " << v.y; return s;}
 
 using Vec2i = Vec2<int32_t>;
+using Vec2sz = Vec2<size_t>;
 
