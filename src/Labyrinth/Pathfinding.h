@@ -8,11 +8,10 @@
 
 #include "Maze.h"
 
-
 struct Node
 {
-    Vec2i pos = Vec2(0);
-    Vec2i parent = Vec2(0); // from which node this one was created
+    Vec2sz pos = Vec2sz(0);
+    Vec2sz parent = Vec2sz(0); // from which node this one was created
     uint32_t g = 0; // distance from starting node to current
     uint32_t h = 0; // heuristic distance to the goal
 
@@ -22,30 +21,27 @@ struct Node
 /**
  * @brief Pathfinder object implementation based on A* algorithm 
  * 
+ * TODO: 17.11.22 - this class should be fully rewritten
  */
 class Pathfinder
 {
 public:
-    using HeuristicFn = std::function<uint32_t(const Vec2i&, const Vec2i&)>;
+    using HeuristicFn = std::function<uint32_t(const Vec2sz&, const Vec2sz&)>;
 private:
     std::priority_queue<Node> m_openList;    
     std::vector<Node> m_pathList;
     std::vector<bool> m_closedList;
-    Vec2i m_dimensions;
-    Cell* m_data;
+    Vec2sz m_dimensions;
+    Maze& m_maze;
 
 public:
     Pathfinder(Maze& maze);
     ~Pathfinder() = default;
 
-    std::vector<Vec2i> pathfind(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic);
+    std::vector<Vec2sz> pathfind(const Vec2sz& start, const Vec2sz& goal, const HeuristicFn& heuristic);
 private:
-    std::vector<Vec2i> recreatePath(const Vec2i& goal) const;
-    inline constexpr bool isValid(const Vec2i& v) const 
-    { 
-        return v.x < m_dimensions.x && v.x >= 0 
-            && v.y < m_dimensions.y && v.y >= 0; 
-    }
+    std::vector<Vec2sz> recreatePath(const Vec2sz& goal) const;
+    inline constexpr bool isValid(const Vec2sz& v) const { return v.x < m_dimensions.x && v.y < m_dimensions.y; }
 
     /**
      * @param parent a node's position, from which we will be checking the wall
@@ -56,6 +52,6 @@ private:
      * @return true if it is possible to move from parent to neigbor
      * @return false if there is no way to move from parent to neighbor
      */
-    bool isWall(Vec2i& parent, Vec2i& neighbor) const;
-    inline constexpr size_t toIndex1D(const Vec2i& v) const { return (v.y * m_dimensions.x) + v.x; };
+    bool isWall(const Vec2i& parent, const Vec2i& neighbor) const;
+    inline constexpr size_t toIndex1D(const Vec2sz& v) const { return (v.y * m_dimensions.x) + v.x; };
 };

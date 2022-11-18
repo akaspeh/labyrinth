@@ -1,13 +1,14 @@
 #include "Pathfinding.h"
 
 Pathfinder::Pathfinder(Maze& maze)
-    : m_dimensions(maze.Dimensions())
-    , m_data(maze.Data())
+    : m_dimensions(Vec2sz(maze.getWidth(), maze.getHeight()))
+    , m_maze(maze)
 {
 }
 
-std::vector<Vec2i> Pathfinder::pathfind(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic)
+std::vector<Vec2sz> Pathfinder::pathfind(const Vec2sz& start, const Vec2sz& goal, const HeuristicFn& heuristic)
 {
+    // FIX: Shouldn't use size_t and -1, lol
     static Vec2i neighbors[] = {
         Vec2i{ 0, -1}, // NORTH
         Vec2i{ 1,  0}, // EAST
@@ -21,7 +22,7 @@ std::vector<Vec2i> Pathfinder::pathfind(const Vec2i& start, const Vec2i& goal, c
 
     m_pathList[toIndex1D(start)].parent = start; // assign start parent to start so we could recreate the path
     m_openList.push(Node{ .pos = start }); // just assign pos, everything else is zero-initialized
-    Vec2i currentPos;
+    Vec2sz currentPos;
 
     while (!m_openList.empty())
     {
@@ -37,10 +38,10 @@ std::vector<Vec2i> Pathfinder::pathfind(const Vec2i& start, const Vec2i& goal, c
 
         for (const Vec2i& v : neighbors)
         {
-            Vec2i neighborPos = currentPos + v;
+            Vec2sz neighborPos = Vec2sz(currentPos.x + v.x, currentPos.y + v.y);
             size_t index = toIndex1D(neighborPos);
 
-            if (!isValid(neighborPos) || isWall(currentPos, neighborPos) || m_closedList[index])
+            if (!isValid(neighborPos) || isWall((Vec2i) currentPos, (Vec2i) neighborPos) || m_closedList[index])
                 continue;
 
             // we count new f, g and h
@@ -63,9 +64,9 @@ std::vector<Vec2i> Pathfinder::pathfind(const Vec2i& start, const Vec2i& goal, c
     return recreatePath(goal);
 }
 
-std::vector<Vec2i> Pathfinder::recreatePath(const Vec2i& goal) const
+std::vector<Vec2sz> Pathfinder::recreatePath(const Vec2sz& goal) const
 {
-    std::vector<Vec2i> path;
+    std::vector<Vec2sz> path;
 
     Vec2 current = goal;
     size_t index = toIndex1D(current);
@@ -81,12 +82,12 @@ std::vector<Vec2i> Pathfinder::recreatePath(const Vec2i& goal) const
     return path;
 }
 
-bool Pathfinder::isWall(Vec2i& parent, Vec2i& neighbor) const
+bool Pathfinder::isWall(const Vec2i& parent, const Vec2i& neighbor) const
 {
     // I get delta between vector neigbor and parent, based on which I will choose the direction
-    // Example: Parent = {0, 1} and Neighbor = {0, 2}. Than Delta = {0, 1}, which is Direction::SOUTH
+    // Example: Parent = {0, 1} and Neighbor = {0, 2}. Then Delta = {0, 1}, which is Direction::SOUTH
     Vec2i delta = Vec2i::Delta(neighbor, parent);
     // now, when we got a direction, we can check if we can move from parent to neighbor
-    Cell& cell = m_data[toIndex1D(parent)];
+    Cell& cell = m_maze[parent.x][parent.y];
     return !cell.hasPath((Direction) delta); // we are able to cast vec2 to direction due to vec2 operator()
 }

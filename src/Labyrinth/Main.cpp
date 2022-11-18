@@ -5,8 +5,7 @@
 
 int main()
 {
-    Maze m_maze(10,10);
-    Application App;
-    App.Run();
+    Application application;
+    application.Run();
     return 0;
 }

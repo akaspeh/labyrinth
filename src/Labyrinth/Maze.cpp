@@ -1,180 +1,145 @@
 #include "Maze.h"
 
 #include <algorithm>
+#include <array>
 
-
-
-Maze::Maze(const size_t mazeWidth, const size_t mazeHeight, const int seed)
-    : m_mazeWidth(mazeWidth), m_mazeHeight(mazeHeight),
-    m_pMaze(new Cell[mazeWidth * mazeHeight]),
-    m_seed((seed >= 0) ? static_cast<std::random_device::result_type>(seed) : m_randDevice()),
-    m_randGenerator(m_seed)
-
+Maze::Maze(size_t width, size_t height, uint32_t seed)
+    : m_grid(width, height)
+    , m_randGenerator(seed)
 {
+    CreateMaze();
+}
+
+Maze::Maze(size_t width, size_t height)
+    : m_grid(width, height)
+{
+    std::seed_seq sseq = {width, height};
+    m_randGenerator = std::mt19937(sseq);
     CreateMaze();
 }
 
 void Maze::CreateMaze()
 {
-    if(m_pMaze != nullptr){
-        delete[] m_pMaze;
-        m_pMaze = new Cell[m_mazeWidth * m_mazeHeight];
-    }
     // pair (x, y) - position in the grid
-    std::stack<Vec2i> mazeStack;
+    std::stack<Vec2sz> mazeStack;
 
-    mazeStack.push(Vec2i(0));
-    m_pMaze[0].setVisited();
+    mazeStack.push( {0, 0} );
+    m_grid[0][0].setVisited();
 
-    size_t visitedCells = 1;
+    // we will store all available directions here
+    std::vector<Vec2i> neighbors;
+    neighbors.reserve(4); // avoid reallocations
 
-    // for calculating the position of neighbours
-    auto offset = [&](const size_t x, const size_t y)
-    {
-        return (mazeStack.top().y + y) * m_mazeWidth + (mazeStack.top().x + x);
+    // we could utilize an array of neighbors to reduce shitty code
+    static constexpr std::array<Vec2i, 4> directions = {
+        Vec2i( 0, -1),
+        Vec2i( 1,  0),
+        Vec2i( 0,  1),
+        Vec2i(-1,  0),
     };
 
-    std::vector<Direction> neighbours;
-
-    while (visitedCells < m_mazeWidth * m_mazeHeight)
+    while (!mazeStack.empty())
     {
-        // North neighbour
-        if (mazeStack.top().y > 0 && !m_pMaze[offset(0, -1)].isVisited())
+        Vec2sz pos = mazeStack.top();
+
+        for (Vec2i delta : directions)
         {
-            neighbours.push_back(Direction::NORTH);
+            // Be careful here with conversions as we try to add unsigned type to signed (int32_t and size_t)
+            Vec2sz npos = Vec2sz(pos.x + delta.x, pos.y + delta.y);
+            if (npos.x > m_grid.getWidth() - 1 || npos.y > m_grid.getHeight() - 1 || m_grid[npos.x][npos.y].isVisited())
+                continue;
+
+            neighbors.push_back(delta);
         }
 
-        // East neighbour
-        if (mazeStack.top().x < m_mazeWidth - 1 && !m_pMaze[offset(1, 0)].isVisited())
+        if (!neighbors.empty())
         {
-            neighbours.push_back(Direction::EAST);
+            // get location of random neighbor
+            Vec2i delta = neighbors.at(generateIndex(0, neighbors.size() - 1));
+            // we won't use operator+ overload here as we treat two different types
+            // as you may have seen above
+            Vec2sz npos = Vec2sz(pos.x + delta.x, pos.y + delta.y);
+
+            // get neighboring cell
+            Cell& ncell = m_grid[npos.x][npos.y];
+            // get parent cell
+            Cell& pcell = m_grid[pos.x][pos.y];
+
+            // we break a wall in both cells and mark them as visited
+            pcell.setVisited();
+            ncell.setVisited();
+            pcell.breakWall((Direction) delta);
+            ncell.breakWall(getOpposite((Direction) delta));
+            mazeStack.push(npos);
+
+            // capacity of vector is untouched, so no std::vector::reserve() is needed
+            neighbors.clear();
         }
-
-        // South neighbour
-        if (mazeStack.top().y < m_mazeHeight - 1 && !m_pMaze[offset(0, 1)].isVisited())
-        {
-            neighbours.push_back(Direction::SOUTH);
-        }
-
-        // West neighbour
-        if (mazeStack.top().x > 0 && !m_pMaze[offset(-1, 0)].isVisited())
-        {
-            neighbours.push_back(Direction::WEST);
-        }
-
-        if (!neighbours.empty())
-        {
-            Direction& dir = neighbours[static_cast<size_t>(GenerateIntInRange(0, static_cast<int>(neighbours.size()) - 1))];
-
-            m_pMaze[offset(0, 0)].setVisited();
-            ++visitedCells;
-
-            switch (dir)
-            {
-            case Direction::NORTH:
-                m_pMaze[offset(0, 0)].breakWall(Direction::NORTH);
-                m_pMaze[offset(0, -1)].breakWall(Direction::SOUTH);
-                m_pMaze[offset(0, -1)].setVisited();
-                mazeStack.push({ mazeStack.top().x, mazeStack.top().y - 1 });
-                break;
-            case Direction::EAST:
-                m_pMaze[offset(0, 0)].breakWall(Direction::EAST);
-                m_pMaze[offset(1, 0)].breakWall(Direction::WEST);
-                m_pMaze[offset(1, 0)].setVisited();
-                mazeStack.push({ mazeStack.top().x + 1, mazeStack.top().y });
-                break;
-            case Direction::SOUTH:
-                m_pMaze[offset(0, 0)].breakWall(Direction::SOUTH);
-                m_pMaze[offset(0, 1)].breakWall(Direction::NORTH);
-                m_pMaze[offset(0, 1)].setVisited();
-                mazeStack.push({ mazeStack.top().x, mazeStack.top().y + 1 });
-                break;
-            case Direction::WEST:
-                m_pMaze[offset(0, 0)].breakWall(Direction::WEST);
-                m_pMaze[offset(-1, 0)].breakWall(Direction::EAST);
-                m_pMaze[offset(-1, 0)].setVisited();
-                mazeStack.push({ mazeStack.top().x - 1, mazeStack.top().y });
-                break;
-            default:
-                break;
-            }
-
-            neighbours.clear();
-        }
-        else
-        {
-            mazeStack.pop();
-        }
+        else mazeStack.pop();
     }
 }
 
-void Maze::ChangeSize(const size_t mazeWidth, const size_t mazeHeight){
-    m_mazeWidth = mazeWidth;
-    m_mazeHeight = mazeHeight;
-}
-
-void Maze::ShowMazeText(std::optional<Maze::cref_type<Maze::path_container_type>> path)
+void Maze::Print(std::optional<Maze::cref_type<Maze::path_container_type>> path)
 {
     bool pathWay = false;
 
-    auto is_path = [&](const size_t row, const size_t col) -> bool
+    auto is_path = [&](size_t x, size_t y) -> bool
     {
         if (!path.has_value()) // so that the printing part is cleaner
             return false;
 
         const Maze::path_container_type& container = path.value().get();
-        Vec2 target = Vec2(static_cast<int32_t>(col), static_cast<int32_t>(row)); // Vector, that we want to find in path
-        return std::any_of(container.begin(), container.end(), [&](const Vec2i& v) { return v == target; });
+        // be careful with size_t -> int32_t conversion
+        Vec2sz target = Vec2sz(x, y); // Vector, that we want to find in path
+        return std::any_of(container.begin(), container.end(), [&](const Vec2sz& v) { return v == target; });
     };
 
-    for (size_t row = 0; row < m_mazeHeight; ++row)
+    for (size_t y = 0; y < m_grid.getHeight(); y++)
     {
-        for (size_t col = 0; col < m_mazeWidth; ++col)
+        for (size_t x = 0; x < m_grid.getWidth(); x++)
         {
-            pathWay = is_path(row, col);
+            pathWay = is_path(x, y);
 
             if (pathWay)
             {
-                std::cout << (!m_pMaze[row * m_mazeWidth + col].hasPath(Direction::NORTH) ? "##" : "#.");
+                std::cout << (!m_grid[x][y].hasPath(Direction::NORTH) ? "##" : "#.");
             }
             else
             {
-                std::cout << (!m_pMaze[row * m_mazeWidth + col].hasPath(Direction::NORTH) ? "##" : "# ");
+                std::cout << (!m_grid[x][y].hasPath(Direction::NORTH) ? "##" : "# ");
             }
 
             pathWay = false;
         }
+        std::cout << "#\n";
 
-        std::cout << "#" << std::endl;
-
-        for (size_t col = 0; col < m_mazeWidth; ++col)
+        for (size_t x = 0; x < m_grid.getWidth(); x++)
         {
-            pathWay = is_path(row, col);
+            pathWay = is_path(x, y);
 
             if (pathWay)
             {
-                std::cout << (!m_pMaze[row * m_mazeWidth + col].hasPath(Direction::WEST) ? "#." : "..");
+                std::cout << (!m_grid[x][y].hasPath(Direction::WEST) ? "#." : "..");
             }
             else
             {
-                std::cout << (!m_pMaze[row * m_mazeWidth + col].hasPath(Direction::WEST) ? "# " : "  ");
+                std::cout << (!m_grid[x][y].hasPath(Direction::WEST) ? "# " : "  ");
             }
 
             pathWay = false;
         }
-
-        std::cout << "#" << std::endl;
+        std::cout << "#\n";
     }
 
-    for (size_t col = 0; col < m_mazeWidth; ++col)
+    for (size_t x = 0; x < m_grid.getWidth(); x++)
     {
         std::cout << "##";
     }
 
-    std::cout << "#" << std::endl;
+    std::cout << "#\n";
 }
 
-void Maze::ShowMazeTextBold(std::optional<Maze::cref_type<Maze::path_container_type>> path)
+void Maze::PrintBold(std::optional<Maze::cref_type<Maze::path_container_type>> path)
 {
     // k = 0 -	###	\
 	// k = 1 -	# #	- entire cell spans 3 rows
@@ -182,27 +147,28 @@ void Maze::ShowMazeTextBold(std::optional<Maze::cref_type<Maze::path_container_t
 
     bool pathWay = false;
 
-    auto is_path = [&](const size_t row, const size_t col) -> bool
+    auto is_path = [&](size_t x, size_t y) -> bool
     {
         if (!path.has_value()) // so that the printing part is cleaner
             return false;
 
         const Maze::path_container_type& container = path.value().get();
-        Vec2 target = Vec2(static_cast<int32_t>(col), static_cast<int32_t>(row)); // Vector, that we want to find in path
-        return std::any_of(container.begin(), container.end(), [&](const Vec2i& v) { return v == target; });
+        // be careful with size_t -> int32_t conversion
+        Vec2sz target = Vec2sz(x, y); // Vector, that we want to find in path
+        return std::any_of(container.begin(), container.end(), [&](const Vec2sz& v) { return v == target; });
     };
 
-    for (size_t row = 0; row < m_mazeHeight; ++row)
+    for (size_t y = 0; y < m_grid.getHeight(); y++)
     {
         for (size_t k = 0; k < 3; k++)
         {
             std::cout << "#";
 
-            for (size_t col = 0; col < m_mazeWidth; ++col)
+            for (size_t x = 0; x < m_grid.getWidth(); x++)
             {
-                Cell& curr = m_pMaze[row * m_mazeWidth + col];
+                Cell& curr = m_grid[x][y];
 
-                pathWay = is_path(row, col);
+                pathWay = is_path(x, y);
 
                 switch (k)
                 {
@@ -251,15 +217,13 @@ void Maze::ShowMazeTextBold(std::optional<Maze::cref_type<Maze::path_container_t
                 pathWay = false;
             }
 
-            std::cout << "#";
-
-            std::cout << std::endl;
+            std::cout << "#\n";
         }
     }
 }
 
-int Maze::GenerateIntInRange(int from, int to)
+size_t Maze::generateIndex(size_t lhs, size_t rhs)
 {
-    std::uniform_int_distribution<int> randDist(from, to);
+    std::uniform_int_distribution<size_t> randDist(lhs, rhs);
     return randDist(m_randGenerator);
 }
