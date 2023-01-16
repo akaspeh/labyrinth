@@ -21,7 +21,7 @@ Maze::Maze(size_t width, size_t height)
 void Maze::CreateMaze()
 {
     // pair (x, y) - position in the grid
-    std::stack<Vec2sz> mazeStack;
+    std::stack<Vec2i> mazeStack;
 
     mazeStack.push( {0, 0} );
     m_grid[0][0].setVisited();
@@ -40,12 +40,12 @@ void Maze::CreateMaze()
 
     while (!mazeStack.empty())
     {
-        Vec2sz pos = mazeStack.top();
+        Vec2i pos = mazeStack.top();
 
         for (Vec2i delta : directions)
         {
             // Be careful here with conversions as we try to add unsigned type to signed (int32_t and size_t)
-            Vec2sz npos = Vec2sz(pos.x + delta.x, pos.y + delta.y);
+            Vec2i npos = Vec2i(pos.x + delta.x, pos.y + delta.y);
             if (npos.x > m_grid.getWidth() - 1 || npos.y > m_grid.getHeight() - 1 || m_grid[npos.x][npos.y].isVisited())
                 continue;
 
@@ -58,7 +58,7 @@ void Maze::CreateMaze()
             Vec2i delta = neighbors.at(generateIndex(0, neighbors.size() - 1));
             // we won't use operator+ overload here as we treat two different types
             // as you may have seen above
-            Vec2sz npos = Vec2sz(pos.x + delta.x, pos.y + delta.y);
+            Vec2i npos = Vec2i(pos.x + delta.x, pos.y + delta.y);
 
             // get neighboring cell
             Cell& ncell = m_grid[npos.x][npos.y];
@@ -90,8 +90,8 @@ void Maze::Print(std::optional<Maze::cref_type<Maze::path_container_type>> path)
 
         const Maze::path_container_type& container = path.value().get();
         // be careful with size_t -> int32_t conversion
-        Vec2sz target = Vec2sz(x, y); // Vector, that we want to find in path
-        return std::any_of(container.begin(), container.end(), [&](const Vec2sz& v) { return v == target; });
+        Vec2i target = Vec2i(x, y); // Vector, that we want to find in path
+        return std::any_of(container.begin(), container.end(), [&](const Vec2i& v) { return v == target; });
     };
 
     for (size_t y = 0; y < m_grid.getHeight(); y++)
@@ -154,8 +154,8 @@ void Maze::PrintBold(std::optional<Maze::cref_type<Maze::path_container_type>> p
 
         const Maze::path_container_type& container = path.value().get();
         // be careful with size_t -> int32_t conversion
-        Vec2sz target = Vec2sz(x, y); // Vector, that we want to find in path
-        return std::any_of(container.begin(), container.end(), [&](const Vec2sz& v) { return v == target; });
+        Vec2i target = Vec2i(x, y); // Vector, that we want to find in path
+        return std::any_of(container.begin(), container.end(), [&](const Vec2i& v) { return v == target; });
     };
 
     for (size_t y = 0; y < m_grid.getHeight(); y++)

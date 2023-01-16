@@ -1,12 +1,12 @@
 #include "Pathfinding.h"
 
 Pathfinder::Pathfinder(Maze& maze)
-    : m_dimensions(Vec2sz(maze.getWidth(), maze.getHeight()))
+    : m_dimensions(Vec2i(maze.getWidth(), maze.getHeight()))
     , m_maze(maze)
 {
 }
 
-std::vector<Vec2sz> Pathfinder::pathfind(const Vec2sz& start, const Vec2sz& goal, const HeuristicFn& heuristic)
+std::vector<Vec2i> Pathfinder::pathfind(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic)
 {
     // FIX: Shouldn't use size_t and -1, lol
     static Vec2i neighbors[] = {
@@ -22,7 +22,7 @@ std::vector<Vec2sz> Pathfinder::pathfind(const Vec2sz& start, const Vec2sz& goal
 
     m_pathList[toIndex1D(start)].parent = start; // assign start parent to start so we could recreate the path
     m_openList.push(Node{ .pos = start }); // just assign pos, everything else is zero-initialized
-    Vec2sz currentPos;
+    Vec2i currentPos;
 
     while (!m_openList.empty())
     {
@@ -38,7 +38,7 @@ std::vector<Vec2sz> Pathfinder::pathfind(const Vec2sz& start, const Vec2sz& goal
 
         for (const Vec2i& v : neighbors)
         {
-            Vec2sz neighborPos = Vec2sz(currentPos.x + v.x, currentPos.y + v.y);
+            Vec2i neighborPos = Vec2i(currentPos.x + v.x, currentPos.y + v.y);
             size_t index = toIndex1D(neighborPos);
 
             if (!isValid(neighborPos) || isWall((Vec2i) currentPos, (Vec2i) neighborPos) || m_closedList[index])
@@ -64,9 +64,9 @@ std::vector<Vec2sz> Pathfinder::pathfind(const Vec2sz& start, const Vec2sz& goal
     return recreatePath(goal);
 }
 
-std::vector<Vec2sz> Pathfinder::recreatePath(const Vec2sz& goal) const
+std::vector<Vec2i> Pathfinder::recreatePath(const Vec2i& goal) const
 {
-    std::vector<Vec2sz> path;
+    std::vector<Vec2i> path;
 
     Vec2 current = goal;
     size_t index = toIndex1D(current);

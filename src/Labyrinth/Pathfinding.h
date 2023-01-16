@@ -10,8 +10,8 @@
 
 struct Node
 {
-    Vec2sz pos = Vec2sz(0);
-    Vec2sz parent = Vec2sz(0); // from which node this one was created
+    Vec2i pos = Vec2i(0);
+    Vec2i parent = Vec2i(0); // from which node this one was created
     uint32_t g = 0; // distance from starting node to current
     uint32_t h = 0; // heuristic distance to the goal
 
@@ -26,22 +26,22 @@ struct Node
 class Pathfinder
 {
 public:
-    using HeuristicFn = std::function<uint32_t(const Vec2sz&, const Vec2sz&)>;
+    using HeuristicFn = std::function<uint32_t(const Vec2i&, const Vec2i&)>;
 private:
     std::priority_queue<Node> m_openList;    
     std::vector<Node> m_pathList;
     std::vector<bool> m_closedList;
-    Vec2sz m_dimensions;
+    Vec2i m_dimensions;
     Maze& m_maze;
 
 public:
     Pathfinder(Maze& maze);
     ~Pathfinder() = default;
 
-    std::vector<Vec2sz> pathfind(const Vec2sz& start, const Vec2sz& goal, const HeuristicFn& heuristic);
+    std::vector<Vec2i> pathfind(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic);
 private:
-    std::vector<Vec2sz> recreatePath(const Vec2sz& goal) const;
-    inline constexpr bool isValid(const Vec2sz& v) const { return v.x < m_dimensions.x && v.y < m_dimensions.y; }
+    std::vector<Vec2i> recreatePath(const Vec2i& goal) const;
+    inline constexpr bool isValid(const Vec2i& v) const { return v.x < m_dimensions.x && v.y < m_dimensions.y; }
 
     /**
      * @param parent a node's position, from which we will be checking the wall
@@ -53,5 +53,5 @@ private:
      * @return false if there is no way to move from parent to neighbor
      */
     bool isWall(const Vec2i& parent, const Vec2i& neighbor) const;
-    inline constexpr size_t toIndex1D(const Vec2sz& v) const { return (v.y * m_dimensions.x) + v.x; };
+    inline constexpr size_t toIndex1D(const Vec2i& v) const { return (v.y * m_dimensions.x) + v.x; };
 };

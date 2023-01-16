@@ -123,7 +123,7 @@ class Maze
 {
 public:
     // We use those aliases, as we probably will rewrite the whole maze system in future
-    using path_container_type = std::vector<Vec2sz>; // We should use our own data structure in future, i guess
+    using path_container_type = std::vector<Vec2i>; // We should use our own data structure in future, i guess
     template<typename T> using ref_type = std::reference_wrapper<T>;
     template<typename T> using cref_type = ref_type<std::add_const_t<T>>;
 
