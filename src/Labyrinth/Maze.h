@@ -129,3 +129,40 @@ private:
 private:
     Grid m_grid;
 };
+
+class MazePrinter
+{
+public:
+    using path_container_type = std::vector<Vec2i>;
+    template<typename T> using ref_type = std::reference_wrapper<T>;
+    template<typename T> using cref_type = ref_type<std::add_const_t<T>>;
+public:
+    MazePrinter() = delete;
+    ~MazePrinter() = delete;
+    MazePrinter(const MazePrinter& mazePrinter) = delete;
+    MazePrinter operator=(const MazePrinter& mazePrinter) = delete;
+
+    static void PrintInConsole(Maze* maze,
+        std::optional<cref_type<path_container_type>> path = std::nullopt);
+    static void PrintInConsoleBold(Maze* maze,
+        std::optional<cref_type<path_container_type>> path = std::nullopt);
+};
+
+class MazeFactory
+{
+public:
+    MazeFactory() = default;
+    ~MazeFactory() = default;
+    MazeFactory(const MazeFactory& mazeFactory) = delete;
+    MazeFactory operator=(const MazeFactory& mazeFactory) = delete;
+
+    virtual std::shared_ptr<Maze> createMaze(size_t width, size_t height, 
+        std::optional<uint32_t> seed = std::nullopt) const = 0;
+};
+
+class SimpleMazeCreator
+    : public MazeFactory
+{
+    virtual std::shared_ptr<Maze> createMaze(size_t width, size_t height,
+        std::optional<uint32_t> seed = std::nullopt) const override;
+};
