@@ -43,10 +43,13 @@ void Maze::CreateMaze()
 
         for (Vec2i delta : directions)
         {
-            // Be careful here with conversions as we try to add unsigned type to signed (int32_t and size_t)
             Vec2i npos = Vec2i(pos.x + delta.x, pos.y + delta.y);
-            if (npos.x > m_grid.getWidth() - 1 || npos.y > m_grid.getHeight() - 1 || m_grid[npos.x][npos.y].isVisited())
+            if (npos.x < 0 || npos.y < 0 || 
+                npos.x > m_grid.getWidth() - 1 || npos.y > m_grid.getHeight() - 1 || 
+                m_grid[npos.x][npos.y].isVisited())
+            {
                 continue;
+            }
 
             neighbors.push_back(delta);
         }
