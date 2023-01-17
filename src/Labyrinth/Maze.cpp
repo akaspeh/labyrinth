@@ -4,18 +4,16 @@
 #include <array>
 
 Maze::Maze(size_t width, size_t height, uint32_t seed)
-    : m_grid(width, height),
-    m_seed(static_cast<std::random_device::result_type>(seed)),
-    m_randGenerator(m_seed)
+    : m_grid(width, height)
 {
+    RandomGenerator::setSeed(static_cast<std::random_device::result_type>(seed));
     CreateMaze();
 }
 
 Maze::Maze(size_t width, size_t height)
-    : m_grid(width, height),
-    m_seed(m_randDevice()),
-    m_randGenerator(m_seed)
+    : m_grid(width, height)
 {
+    RandomGenerator::setSeed(static_cast<std::random_device::result_type>(0));
     CreateMaze();
 }
 
@@ -56,7 +54,7 @@ void Maze::CreateMaze()
         if (!neighbors.empty())
         {
             // get location of random neighbor
-            Vec2i delta = neighbors.at(generateIndex(0, neighbors.size() - 1));
+            Vec2i delta = neighbors.at(RandomGenerator::generateIndex(0, neighbors.size() - 1));
             // we won't use operator+ overload here as we treat two different types
             // as you may have seen above
             Vec2i npos = Vec2i(pos.x + delta.x, pos.y + delta.y);
@@ -78,10 +76,4 @@ void Maze::CreateMaze()
         }
         else mazeStack.pop();
     }
-}
-
-size_t Maze::generateIndex(size_t lhs, size_t rhs)
-{
-    std::uniform_int_distribution<size_t> randDist(lhs, rhs);
-    return randDist(m_randGenerator);
 }
