@@ -4,17 +4,18 @@
 #include <array>
 
 Maze::Maze(size_t width, size_t height, uint32_t seed)
-    : m_grid(width, height)
-    , m_randGenerator(seed)
+    : m_grid(width, height),
+    m_seed(static_cast<std::random_device::result_type>(seed)),
+    m_randGenerator(m_seed)
 {
     CreateMaze();
 }
 
 Maze::Maze(size_t width, size_t height)
-    : m_grid(width, height)
+    : m_grid(width, height),
+    m_seed(m_randDevice()),
+    m_randGenerator(m_seed)
 {
-    std::seed_seq sseq = {width, height};
-    m_randGenerator = std::mt19937(sseq);
     CreateMaze();
 }
 

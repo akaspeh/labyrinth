@@ -147,6 +147,7 @@ private:
     Grid m_grid;
 
     std::random_device m_randDevice;
+    std::random_device::result_type m_seed;
     std::mt19937 m_randGenerator;
 
     size_t generateIndex(size_t lhs, size_t rhs);
