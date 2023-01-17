@@ -133,9 +133,6 @@ public:
     ~Maze() = default;
 
     void CreateMaze();
-    // Those two printing methods should be rewritten and adapted to use std:: and utilize output stream operator
-    void Print(std::optional<cref_type<path_container_type>> path = std::nullopt);
-    void PrintBold(std::optional<cref_type<path_container_type>> path = std::nullopt);
     
     inline constexpr size_t getWidth() const { return m_grid.getWidth(); }
     // Make Maze immutable!

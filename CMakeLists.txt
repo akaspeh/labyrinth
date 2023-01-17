@@ -18,7 +18,7 @@ if (LABYRINTH_DEBUG)
     add_definitions(-Wall -Wextra)
 endif()
 
-add_executable(Labyrinth ${EXECUTABLE_SRC})
+add_executable(Labyrinth ${EXECUTABLE_SRC} "src/Labyrinth/MazePrinter.h")
 
 target_include_directories(Labyrinth 
     PUBLIC ${LABYRINTH_INCLUDE_DIRS}

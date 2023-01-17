@@ -53,5 +53,5 @@ private:
      * @return false if there is no way to move from parent to neighbor
      */
     bool isWall(const Vec2i& parent, const Vec2i& neighbor) const;
-    inline constexpr size_t toIndex1D(const Vec2i& v) const { return (v.y * m_dimensions.x) + v.x; };
+    inline constexpr size_t toIndex1D(const Vec2i& v) const { return static_cast<size_t>((v.y * m_dimensions.x) + v.x); };
 };

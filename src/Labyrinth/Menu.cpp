@@ -20,9 +20,9 @@ void Menu::CreateMaze()
 
 void Menu::ShowMaze() const
 {
-    m_maze->PrintBold();
+    MazePrinter::PrintInConsoleBold(m_maze);
     std::cout << std::endl << std::endl;
-    m_maze->Print();
+    MazePrinter::PrintInConsole(m_maze);
 }
 
 void Menu::PathFind()
@@ -33,5 +33,5 @@ void Menu::PathFind()
 
     std::cout << std::endl << std::endl;
 
-    m_maze->PrintBold(path);
+    MazePrinter::PrintInConsoleBold(m_maze, path);
 }
