@@ -1,5 +1,7 @@
 #include "MazePrinter.h"
 
+#include <algorithm>
+
 void MazePrinter::PrintInConsole(Maze* maze, std::optional<cref_type<path_container_type>> path)
 {
     bool pathWay = false;
