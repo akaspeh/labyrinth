@@ -3,12 +3,12 @@
 #include <iostream>
 #include <stack>
 #include <vector>
-#include <random>
 #include <optional>
 #include <utility>
 
 #include "utility/Vec2.h"
 #include "utility/Direction.h"
+#include "utility/RandomGenerator.h"
 
 /**
  * @brief This class represents a single "node" of a maze 
@@ -113,44 +113,19 @@ private:
     std::vector<Row> m_rows;
 };
 
-/**
- * @brief A class that represents a maze itself
- * 
- * TODO: 17.11.22 Maze should become immutable and objects of this type shouldn't be resized or somehow changed!
- * This is because it may break some functionality in future and is generally a bad practice (mutability is bad) in our case
- */
 class Maze
 {
-public:
-    // We use those aliases, as we probably will rewrite the whole maze system in future
-    using path_container_type = std::vector<Vec2sz>; // We should use our own data structure in future, i guess
-    template<typename T> using ref_type = std::reference_wrapper<T>;
-    template<typename T> using cref_type = ref_type<std::add_const_t<T>>;
-
 public:
     Maze(size_t width, size_t height, uint32_t seed);
     Maze(size_t width, size_t height);
     ~Maze() = default;
 
-    void CreateMaze();
-    // Those two printing methods should be rewritten and adapted to use std:: and utilize output stream operator
-    void Print(std::optional<cref_type<path_container_type>> path = std::nullopt);
-    void PrintBold(std::optional<cref_type<path_container_type>> path = std::nullopt);
-    
-    inline constexpr size_t getWidth() const { return m_grid.getWidth(); }
-    // Make Maze immutable!
-    // inline void setWidth(size_t width) { m_grid.setWidth(width); }
-    inline constexpr size_t getHeight() const { return m_grid.getHeight(); }
-    // Make Maze immutable!
-    // inline void setHeight(size_t height) { m_grid.setHeight(height); }
-
     inline constexpr Row& operator[](size_t idx) { return m_grid.operator[](idx); }
-
+    
+    inline constexpr size_t getWidth() const { return m_grid.getWidth(); }  
+    inline constexpr size_t getHeight() const { return m_grid.getHeight(); }
+private:
+    void CreateMaze();
 private:
     Grid m_grid;
-
-    std::random_device m_randDevice;
-    std::mt19937 m_randGenerator;
-
-    size_t generateIndex(size_t lhs, size_t rhs);
 };

@@ -53,5 +53,4 @@ template<typename T>
 std::ostream& operator<<(std::ostream& s, const Vec2<T>& v) { s << v.x << ", " << v.y; return s;}
 
 using Vec2i = Vec2<int32_t>;
-using Vec2sz = Vec2<size_t>;
 

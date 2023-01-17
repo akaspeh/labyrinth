@@ -2,6 +2,7 @@
 
 #include "Pathfinding.h"
 #include "Maze.h"
+#include "MazePrinter.h"
 #include "utility/Vec2.h"
 
 class Menu 
