@@ -1,6 +1,6 @@
 #include "MazePrinter.h"
 
-void MazePrinter::PrintInConsole(Maze* maze, std::optional<Maze::cref_type<Maze::path_container_type>> path)
+void MazePrinter::PrintInConsole(Maze* maze, std::optional<cref_type<path_container_type>> path)
 {
     bool pathWay = false;
 
@@ -9,7 +9,7 @@ void MazePrinter::PrintInConsole(Maze* maze, std::optional<Maze::cref_type<Maze:
         if (!path.has_value()) // so that the printing part is cleaner
             return false;
 
-        const Maze::path_container_type& container = path.value().get();
+        const path_container_type& container = path.value().get();
         // be careful with size_t -> int32_t conversion
         Vec2i target = Vec2i(x, y); // Vector, that we want to find in path
         return std::any_of(container.begin(), container.end(), [&](const Vec2i& v) { return v == target; });
@@ -60,7 +60,7 @@ void MazePrinter::PrintInConsole(Maze* maze, std::optional<Maze::cref_type<Maze:
     std::cout << "#" << std::endl;
 }
 
-void MazePrinter::PrintInConsoleBold(Maze* maze, std::optional<Maze::cref_type<Maze::path_container_type>> path)
+void MazePrinter::PrintInConsoleBold(Maze* maze, std::optional<cref_type<path_container_type>> path)
 {
     // k = 0 -	###	\
     	// k = 1 -	# #	- entire cell spans 3 rows
@@ -73,7 +73,7 @@ void MazePrinter::PrintInConsoleBold(Maze* maze, std::optional<Maze::cref_type<M
         if (!path.has_value()) // so that the printing part is cleaner
             return false;
 
-        const Maze::path_container_type& container = path.value().get();
+        const path_container_type& container = path.value().get();
         // be careful with size_t -> int32_t conversion
         Vec2i target = Vec2i(x, y); // Vector, that we want to find in path
         return std::any_of(container.begin(), container.end(), [&](const Vec2i& v) { return v == target; });

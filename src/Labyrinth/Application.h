@@ -18,7 +18,7 @@ public:
             std::cout << std::endl;
             std::cout << "1.CreateMaze()" << std::endl << "2.ShowMaze()" << std::endl << "3.PathFind()" << std::endl << "4.Exit" << std::endl;
             std::cin >> a;
-            std::cout << std::endl;
+            system("cls");
             switch(a){
                 case 1: m_menu.CreateMaze(); break;
                 case 2: m_menu.ShowMaze(); break;
