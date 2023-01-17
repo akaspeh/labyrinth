@@ -25,8 +25,8 @@ size_t RandomGenerator::generateIndex(size_t from, size_t to)
     return randDist(m_randGenerator);
 }
 
-Vec2i RandomGenerator::generateCellCoords(const Maze& maze)
+Vec2i RandomGenerator::generateCellCoords(Maze* maze)
 {
-    return { generateIndex(0, static_cast<int32_t>(maze.getWidth() - 1)),
-    generateIndex(0, static_cast<int32_t>(maze.getHeight() - 1)) };
+    return { static_cast<int32_t>(generateIndex(0, maze->getWidth() - 1)),
+    static_cast<int32_t>(generateIndex(0, maze->getHeight() - 1))};
 }

@@ -14,7 +14,7 @@ public:
     static void setSeed(std::optional<std::random_device::result_type> seed = std::nullopt);
 
     static size_t generateIndex(size_t from, size_t to);
-    static Vec2i generateCellCoords(const Maze& maze);
+    static Vec2i generateCellCoords(Maze* maze);
 
 private:
     static std::random_device m_randDevice;

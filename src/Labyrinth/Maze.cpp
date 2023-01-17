@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <array>
 
+#include "utility/RandomGenerator.h"
+
 Maze::Maze(size_t width, size_t height, uint32_t seed)
     : m_grid(width, height)
 {
@@ -13,7 +15,7 @@ Maze::Maze(size_t width, size_t height, uint32_t seed)
 Maze::Maze(size_t width, size_t height)
     : m_grid(width, height)
 {
-    RandomGenerator::setSeed(static_cast<std::random_device::result_type>(0));
+    RandomGenerator::setSeed();
     CreateMaze();
 }
 
@@ -144,8 +146,8 @@ void MazePrinter::PrintInConsole(Maze* maze, std::optional<cref_type<path_contai
 void MazePrinter::PrintInConsoleBold(Maze* maze, std::optional<cref_type<path_container_type>> path)
 {
     // k = 0 -	###	\
-    	// k = 1 -	# #	- entire cell spans 3 rows
-        // k = 2 -	###	/
+    // k = 1 -	# #	- entire cell spans 3 rows
+    // k = 2 -	###	/
 
     bool pathWay = false;
 

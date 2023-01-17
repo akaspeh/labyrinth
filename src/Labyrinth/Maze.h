@@ -8,7 +8,6 @@
 
 #include "utility/Vec2.h"
 #include "utility/Direction.h"
-#include "utility/RandomGenerator.h"
 
 /**
  * @brief This class represents a single "node" of a maze 
