@@ -4,16 +4,17 @@ std::random_device RandomGenerator::m_randDevice;
 std::random_device::result_type RandomGenerator::m_seed;
 std::mt19937 RandomGenerator::m_randGenerator;
 
-void RandomGenerator::setSeed(std::random_device::result_type seed)
+void RandomGenerator::setSeed(std::optional<std::random_device::result_type> seed)
 {
-    if (seed <= 0)
+    if (seed.has_value())
     {
-        m_seed = m_randDevice();
+        m_seed = seed.value();
     }
     else
     {
-        m_seed = seed;
+        m_seed = m_randDevice();
     }
+
     std::mt19937 gen(m_seed);
     m_randGenerator = gen;
 }
@@ -22,4 +23,10 @@ size_t RandomGenerator::generateIndex(size_t from, size_t to)
 {
     std::uniform_int_distribution<size_t> randDist(from, to);
     return randDist(m_randGenerator);
+}
+
+Vec2i RandomGenerator::generateCellCoords(Maze* maze)
+{
+    return { static_cast<int32_t>(generateIndex(0, maze->getWidth() - 1)),
+    static_cast<int32_t>(generateIndex(0, maze->getHeight() - 1))};
 }

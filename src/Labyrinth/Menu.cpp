@@ -1,5 +1,7 @@
 #include "Menu.h"
 
+#include "utility/RandomGenerator.h"
+
 Menu::~Menu()
 {
     delete m_maze;
