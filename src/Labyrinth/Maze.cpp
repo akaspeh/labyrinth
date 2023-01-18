@@ -266,16 +266,8 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
         {
             if (robots[i]->getPos().x == x && robots[i]->getPos().y == y)
             {
-                if (robotsOnOneCell > 0)
-                {
-                    ++robotsOnOneCell;
-                    robotChar = static_cast<char>(robotsOnOneCell);
-                }
-                else
-                {
-                    robotChar = robotSymbols[static_cast<size_t>(robots[i]->getRobotType())];
-                    ++robotsOnOneCell;
-                }
+                ++robotsOnOneCell;
+                robotChar = robotSymbols[static_cast<size_t>(robots[i]->getRobotType())];
             }
         }
     };
@@ -294,8 +286,16 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
             if (robotsOnOneCell > 0)
             {
                 std::stringstream oss1, oss2;
-                oss1 << "#" << robotChar;
-                oss2 << " " << robotChar;
+                if (robotsOnOneCell > 1)
+                {
+                    oss1 << "#" << robotsOnOneCell;
+                    oss2 << " " << robotsOnOneCell;
+                }
+                else
+                {
+                    oss1 << "#" << robotChar;
+                    oss2 << " " << robotChar;
+                }
                 std::cout << (!(*maze)[x][y].hasPath(Direction::WEST) ? oss1.str() : oss2.str());
             }
             else
