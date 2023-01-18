@@ -8,7 +8,6 @@
 #include "Pathfinding.h"
 #include "Maze.h"
 
-
 class IRobot
 {
 public:
@@ -28,10 +27,11 @@ public:
         m_path = m_finder->invoke(m_pos, m_goal, Vec2i::Manhattan);
     }
 
-    inline constexpr Vec2i getPos() const { return m_pos; }
-
     virtual bool move() = 0;
 
+    virtual char getRobotChar() const = 0;
+
+    inline constexpr Vec2i getPos() const { return m_pos; }
 protected:
     Vec2i m_pos;
     Vec2i m_goal;
@@ -86,6 +86,11 @@ public:
         }
         return false;
     }
+
+    virtual char getRobotChar() const override
+    {
+        return 'B';
+    }
 private:
     int32_t m_chance;
 }; // BoomRobot class
@@ -109,6 +114,11 @@ public:
 
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
+    }
+
+    virtual char getRobotChar() const override
+    {
+        return 's';
     }
 }; // SimpleRobot class
 
@@ -144,6 +154,11 @@ public:
 
         return false;
     }
+
+    virtual char getRobotChar() const override
+    {
+        return 'S';
+    }
 private:
     Vec2i m_midPoint;
 
@@ -171,6 +186,13 @@ public:
         m_maze->breakWall(m_pos,delta);
         std::cout << "[LOG]: GRAAAA! AngryRobot has punched wall..\n";
         m_path.erase(m_path.begin());
+
+        return false;
+    }
+
+    virtual char getRobotChar() const override
+    {
+        return 'A';
     }
 private:
     Vec2i m_prevpos;
