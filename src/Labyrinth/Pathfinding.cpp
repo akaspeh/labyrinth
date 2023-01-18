@@ -1,14 +1,15 @@
 #include "Pathfinding.h"
 
-Pathfinder::Pathfinder(Maze& maze)
-    : m_dimensions(Vec2i(maze.getWidth(), maze.getHeight()))
+#include <memory>
+
+Pathfinder::Pathfinder(const std::shared_ptr<Maze>& maze)
+    : m_dimensions(Vec2i(maze->getWidth(), maze->getHeight()))
     , m_maze(maze)
 {
 }
 
-std::vector<Vec2i> Pathfinder::pathfind(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic)
+std::vector<Vec2i> Pathfinder::invoke(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic)
 {
-    // FIX: Shouldn't use size_t and -1, lol
     static Vec2i neighbors[] = {
         Vec2i{ 0, -1}, // NORTH
         Vec2i{ 1,  0}, // EAST
@@ -17,7 +18,9 @@ std::vector<Vec2i> Pathfinder::pathfind(const Vec2i& start, const Vec2i& goal, c
     };
 
     size_t sz = m_dimensions.x * m_dimensions.y;
+    m_pathList.clear();
     m_pathList.resize(sz);
+    m_closedList.clear();
     m_closedList.resize(sz, false);
 
     m_pathList[toIndex1D(start)].parent = start; // assign start parent to start so we could recreate the path
@@ -88,6 +91,6 @@ bool Pathfinder::isWall(const Vec2i& parent, const Vec2i& neighbor) const
     // Example: Parent = {0, 1} and Neighbor = {0, 2}. Then Delta = {0, 1}, which is Direction::SOUTH
     Vec2i delta = Vec2i::Delta(neighbor, parent);
     // now, when we got a direction, we can check if we can move from parent to neighbor
-    Cell& cell = m_maze[parent.x][parent.y];
+    Cell& cell = (*m_maze)[parent.x][parent.y];
     return !cell.hasPath((Direction) delta); // we are able to cast vec2 to direction due to vec2 operator()
 }

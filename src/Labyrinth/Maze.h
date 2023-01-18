@@ -5,6 +5,7 @@
 #include <vector>
 #include <optional>
 #include <utility>
+#include <memory>
 
 #include "utility/Vec2.h"
 #include "utility/Direction.h"
@@ -21,7 +22,7 @@ public:
     ~Cell() = default;
 
     inline constexpr void breakWall(const Direction& dir) { m_cellNode |= static_cast<uint8_t>(dir); }
-    inline constexpr bool hasPath(const Direction& dir) { return (m_cellNode & static_cast<uint8_t>(dir)) == static_cast<uint8_t>(dir); }
+    inline constexpr bool hasPath(const Direction& dir) const { return (m_cellNode & static_cast<uint8_t>(dir)) == static_cast<uint8_t>(dir); }
 
     inline void setVisited() { m_cellNode |= 0b10000; }
     inline constexpr bool isVisited() const { return (m_cellNode & 0b10000) == 0b10000; }
@@ -50,6 +51,7 @@ public:
     ~Row() = default;
 
     inline constexpr Cell& operator[](size_t idx) { return m_cells.at(idx); }
+    inline constexpr const Cell& operator[](size_t idx) const { return m_cells.at(idx); }
 
     inline constexpr size_t getHeight() const { return m_cells.size(); }
     inline constexpr void setHeight(size_t height) { m_cells.resize(height); }
@@ -87,6 +89,7 @@ public:
     ~Grid() = default;
 
     inline constexpr Row& operator[](size_t idx) { return m_rows.at(idx); }
+    inline constexpr const Row& operator[](size_t idx) const { return m_rows.at(idx); }
 
     inline constexpr size_t getWidth() const { return m_rows.size(); }
     inline void setWidth(size_t width) { m_rows.resize(width, Row(m_height)); }
@@ -120,6 +123,7 @@ public:
     ~Maze() = default;
 
     inline constexpr Row& operator[](size_t idx) { return m_grid.operator[](idx); }
+    inline constexpr const Row& operator[](size_t idx) const { return m_grid.operator[](idx); }
     
     inline constexpr size_t getWidth() const { return m_grid.getWidth(); }  
     inline constexpr size_t getHeight() const { return m_grid.getHeight(); }
@@ -151,16 +155,13 @@ class MazeFactory
 {
 public:
     MazeFactory() = default;
-    ~MazeFactory() = default;
-    MazeFactory(const MazeFactory& mazeFactory) = delete;
-    MazeFactory operator=(const MazeFactory& mazeFactory) = delete;
+    virtual ~MazeFactory() = default;
 
     virtual std::shared_ptr<Maze> createMaze(size_t width, size_t height, 
         std::optional<uint32_t> seed = std::nullopt) const = 0;
 };
 
-class SimpleMazeCreator
-    : public MazeFactory
+class SimpleMazeCreator : public MazeFactory
 {
     virtual std::shared_ptr<Maze> createMaze(size_t width, size_t height,
         std::optional<uint32_t> seed = std::nullopt) const override;
