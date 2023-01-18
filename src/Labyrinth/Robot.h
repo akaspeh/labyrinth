@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "Pathfinding.h"
 #include "Maze.h"
 
 class IRobot
@@ -74,4 +75,5 @@ public:
 private:
     std::vector<IRobot*> m_robots;
     std::shared_ptr<Maze> m_maze;
+    std::shared_ptr<Pathfinder> m_pathfinder;
 }; // RobotManager class

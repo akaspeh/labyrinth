@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include <utility>
+#include <memory>
 
 #include "Maze.h"
 
@@ -27,18 +28,12 @@ class Pathfinder
 {
 public:
     using HeuristicFn = std::function<uint32_t(const Vec2i&, const Vec2i&)>;
-private:
-    std::priority_queue<Node> m_openList;    
-    std::vector<Node> m_pathList;
-    std::vector<bool> m_closedList;
-    Vec2i m_dimensions;
-    Maze& m_maze;
 
 public:
-    Pathfinder(Maze& maze);
+    Pathfinder(const std::shared_ptr<Maze>& maze);
     ~Pathfinder() = default;
 
-    std::vector<Vec2i> pathfind(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic);
+    std::vector<Vec2i> invoke(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic);
 private:
     std::vector<Vec2i> recreatePath(const Vec2i& goal) const;
     inline constexpr bool isValid(const Vec2i& v) const { return v.x < m_dimensions.x && v.y < m_dimensions.y; }
@@ -54,4 +49,11 @@ private:
      */
     bool isWall(const Vec2i& parent, const Vec2i& neighbor) const;
     inline constexpr size_t toIndex1D(const Vec2i& v) const { return static_cast<size_t>((v.y * m_dimensions.x) + v.x); };
+
+private:
+    std::priority_queue<Node> m_openList;    
+    std::vector<Node> m_pathList;
+    std::vector<bool> m_closedList;
+    Vec2i m_dimensions;
+    std::shared_ptr<Maze> m_maze;
 };
