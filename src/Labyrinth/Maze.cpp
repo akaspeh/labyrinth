@@ -270,18 +270,7 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
     {
         for (size_t x = 0; x < maze->getWidth(); x++)
         {
-            if (isRobotPos(x,y))
-            {
-                std::stringstream oss;
-                oss << "#" << robotChar;
-                std::cout << (!(*maze)[x][y].hasPath(Direction::NORTH) ? "##" : "# ");
-            }
-            else
-            {
-                std::cout << (!(*maze)[x][y].hasPath(Direction::NORTH) ? "##" : "# ");
-            }
-
-            robotChar = 'a';
+            std::cout << (!(*maze)[x][y].hasPath(Direction::NORTH) ? "##" : "# ");
         }
         std::cout << "#" << std::endl;
 
