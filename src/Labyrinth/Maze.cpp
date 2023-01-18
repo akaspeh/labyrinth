@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "utility/RandomGenerator.h"
+#include "utility/ColorfulText.h"
 #include "Robot.h"
 
 Maze::Maze(size_t width, size_t height, uint32_t seed)
@@ -259,6 +260,7 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
     };
     char robotChar = 'u';
     size_t robotsOnOneCell = 0;
+    size_t color = 0;
 
     auto isRobotPos = [&](size_t x, size_t y) -> void
     {
@@ -268,6 +270,7 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
             {
                 ++robotsOnOneCell;
                 robotChar = robotSymbols[static_cast<size_t>(robots[i]->getRobotType())];
+                color = static_cast<size_t>(robots[i]->getRobotType());
             }
         }
     };
@@ -288,15 +291,25 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
                 std::stringstream oss1, oss2;
                 if (robotsOnOneCell > 1)
                 {
-                    oss1 << "#" << robotsOnOneCell;
+                    oss1 << robotsOnOneCell;
                     oss2 << " " << robotsOnOneCell;
+                    color = 5;
                 }
                 else
                 {
-                    oss1 << "#" << robotChar;
+                    oss1 << robotChar;
                     oss2 << " " << robotChar;
                 }
-                std::cout << (!(*maze)[x][y].hasPath(Direction::WEST) ? oss1.str() : oss2.str());
+
+                if (!(*maze)[x][y].hasPath(Direction::WEST))
+                {
+                    std::cout << "#";
+                    PrintColorful(oss1.str(), color);
+                }
+                else
+                {
+                    PrintColorful(oss2.str(), color);
+                }
             }
             else
             {

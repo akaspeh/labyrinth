@@ -18,7 +18,7 @@ if (LABYRINTH_DEBUG)
     add_definitions(-Wall -Wextra)
 endif()
 
-add_executable(Labyrinth ${EXECUTABLE_SRC} "src/Labyrinth/utility/RandomGenerator.h"   "src/Labyrinth/utility/RandomGenerator.cpp")
+add_executable(Labyrinth ${EXECUTABLE_SRC} "src/Labyrinth/utility/RandomGenerator.h"   "src/Labyrinth/utility/RandomGenerator.cpp" "src/Labyrinth/utility/ColorfulText.h")
 
 target_include_directories(Labyrinth 
     PUBLIC ${LABYRINTH_INCLUDE_DIRS}
