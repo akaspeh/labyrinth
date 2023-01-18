@@ -19,13 +19,14 @@ public:
     BattleContext(const std::shared_ptr<Maze>& maze)
         : m_maze(maze)
         , m_closed(false)
-        , m_robotManager(maze)
+        , m_robotManager(maze,std::make_shared<Pathfinder>(maze))
     {
     }
     ~BattleContext() = default;
 
     void Run()
     {
+        m_robotManager.AddRobot<BoomRobot>(m_maze,Vec2i(0),Vec2i(5),100);
         static constexpr char VALID_CHAR = 'a';
         m_closed = false;
         while (!ShouldClose())
@@ -47,7 +48,7 @@ public:
             // TODO: Add pathfinding for each robot, update their paths and positions
             for (IRobot* robot : m_robotManager.GetRobots())
             {
-                // Do something with robots
+                robot->move();
                 std::cout << "Doing something for robots\n";
             }
 

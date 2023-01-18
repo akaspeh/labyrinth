@@ -15,6 +15,7 @@ Maze::Maze(size_t width, size_t height, uint32_t seed)
 
 Maze::Maze(size_t width, size_t height)
     : m_grid(width, height)
+    , m_update(false)
 {
     RandomGenerator::setSeed();
     CreateMaze();
@@ -82,6 +83,38 @@ void Maze::CreateMaze()
         }
         else mazeStack.pop();
     }
+}
+
+void Maze::breakWall(const Vec2i& pos, Direction dir)
+{
+    static constexpr std::array<Vec2i, 4> directions = {
+            Vec2i( 0, -1),
+            Vec2i( 1,  0),
+            Vec2i( 0,  1),
+            Vec2i(-1,  0),
+    };
+    Vec2i delta;
+
+    switch(dir){
+        case Direction::NORTH:{
+            delta = Vec2i(0,-1);
+        }
+        case Direction::SOUTH:{
+            delta = Vec2i(0,1);
+        }
+        case Direction::WEST:{
+            delta = Vec2i(1,0);
+        }
+        case Direction::EAST:{
+            delta = Vec2i(-1,0);
+        }
+    }
+
+    Cell& cell = m_grid[pos.x][pos.y];
+    Vec2i npos = pos + delta;
+    Cell& ncell = m_grid[npos.x][npos.y];
+    cell.breakWall(dir);
+    ncell.breakWall(getOpposite(dir));
 }
 
 void MazePrinter::PrintInConsole(Maze* maze, std::optional<cref_type<path_container_type>> path)

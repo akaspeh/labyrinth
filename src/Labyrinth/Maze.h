@@ -127,10 +127,12 @@ public:
     
     inline constexpr size_t getWidth() const { return m_grid.getWidth(); }  
     inline constexpr size_t getHeight() const { return m_grid.getHeight(); }
+    void breakWall(const Vec2i& pos,Direction dir);
 private:
     void CreateMaze();
 private:
     Grid m_grid;
+    bool m_update;
 };
 
 class MazePrinter
