@@ -8,15 +8,25 @@
 #include "Pathfinding.h"
 #include "Maze.h"
 
+enum class Robots
+{
+    ANGRY,
+    BOOM,
+    SIMPLE,
+    SLOW,
+    UNKNOWN
+};
+
 class IRobot
 {
 public:
     IRobot(const std::shared_ptr<Pathfinder>& pathfinder,
-           const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
+           const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal, const Robots& robotType)
         : m_pos(start)
         , m_maze(maze)
         , m_goal(goal)
         , m_finder(pathfinder)
+        , m_robotType(robotType)
     {
         UpdatePath();
     }
@@ -29,7 +39,7 @@ public:
 
     virtual bool move() = 0;
 
-    virtual char getRobotChar() const = 0;
+    inline constexpr Robots getRobotType() const { return m_robotType; }
 
     inline constexpr Vec2i getPos() const { return m_pos; }
 protected:
@@ -38,6 +48,7 @@ protected:
     std::vector<Vec2i> m_path;
     std::shared_ptr<Maze> m_maze;
     std::shared_ptr<Pathfinder> m_finder;
+    Robots m_robotType;
 }; // IRobot class
 
 class BoomRobot : public IRobot
@@ -45,7 +56,7 @@ class BoomRobot : public IRobot
 public:
     BoomRobot(const std::shared_ptr<Pathfinder>& pathfinder,
     const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal,int32_t chance)
-        : IRobot(pathfinder,maze,start,goal)
+        : IRobot(pathfinder,maze,start,goal, Robots::BOOM)
         , m_chance(std::min(chance,100))
     {
     }
@@ -86,11 +97,6 @@ public:
         }
         return false;
     }
-
-    virtual char getRobotChar() const override
-    {
-        return 'B';
-    }
 private:
     int32_t m_chance;
 }; // BoomRobot class
@@ -100,7 +106,7 @@ class SimpleRobot : public IRobot
 public:
     SimpleRobot(const std::shared_ptr<Pathfinder>& pathfinder,
                 const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
-            : IRobot(pathfinder,maze,start,goal)
+            : IRobot(pathfinder,maze,start,goal, Robots::SIMPLE)
     {
     }
     virtual ~SimpleRobot() = default;
@@ -115,11 +121,6 @@ public:
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
     }
-
-    virtual char getRobotChar() const override
-    {
-        return 's';
-    }
 }; // SimpleRobot class
 
 class SlowRobot : public IRobot
@@ -127,7 +128,7 @@ class SlowRobot : public IRobot
 public:
     SlowRobot(const std::shared_ptr<Pathfinder>& pathfinder,
               const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
-        : IRobot(pathfinder,maze,start,goal),
+        : IRobot(pathfinder,maze,start,goal, Robots::SLOW),
         m_midPoint(RandomGenerator::generateCellCoords(m_maze.get()))
     {
     }
@@ -150,14 +151,9 @@ public:
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
 
-        std::cout << "Middle point: " << m_midPoint.x << " " << m_midPoint.y << std::endl;
+        std::cout << "[LOG]: Middle point - " << m_midPoint.x << " " << m_midPoint.y << "." << std::endl;
 
         return false;
-    }
-
-    virtual char getRobotChar() const override
-    {
-        return 'S';
     }
 private:
     Vec2i m_midPoint;
@@ -168,7 +164,7 @@ class AngryRobot : public IRobot
 {
 public:
     AngryRobot(const std::shared_ptr<Pathfinder>& pathfinder, const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
-            : IRobot(pathfinder,maze,start,goal)
+            : IRobot(pathfinder,maze,start,goal, Robots::ANGRY)
             , m_prevpos(0)
     {
     }
@@ -176,23 +172,18 @@ public:
 
     virtual bool move()
     {
-        if(m_path.empty())
+        if (m_path.empty())
         {
             return true;
         }
         m_prevpos = m_pos;
         m_pos = m_path.front();
         Vec2i delta = m_pos - m_prevpos;
-        m_maze->breakWall(m_pos,delta);
+        m_maze->breakWall(m_pos, delta);
         std::cout << "[LOG]: GRAAAA! AngryRobot has punched wall..\n";
         m_path.erase(m_path.begin());
 
         return false;
-    }
-
-    virtual char getRobotChar() const override
-    {
-        return 'A';
     }
 private:
     Vec2i m_prevpos;
