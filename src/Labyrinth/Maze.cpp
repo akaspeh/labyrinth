@@ -251,7 +251,13 @@ void MazePrinter::PrintInConsoleBold(Maze* maze, std::optional<cref_type<path_co
 
 void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
 {
-    char robotChar;
+    std::array<char, static_cast<size_t>(Robots::UNKNOWN)> robotSymbols = {
+        'A',
+        'B',
+        's',
+        'S'
+    };
+    char robotChar = 'u';
     size_t robotsOnOneCell = 0;
 
     auto isRobotPos = [&](size_t x, size_t y) -> void
@@ -267,7 +273,7 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
                 }
                 else
                 {
-                    robotChar = robots[i]->getRobotChar();
+                    robotChar = robotSymbols[static_cast<size_t>(robots[i]->getRobotType())];
                     ++robotsOnOneCell;
                 }
             }
