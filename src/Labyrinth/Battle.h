@@ -53,6 +53,7 @@ public:
             }
 
             MazePrinter::PrintInConsole(m_maze.get());
+            MazePrinter::PrintInConsoleRobots(m_maze.get(), m_robotManager.GetRobots());
         }
     }
 

@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <array>
 #include <memory>
+#include <sstream>
 
 #include "utility/RandomGenerator.h"
+#include "Robot.h"
 
 Maze::Maze(size_t width, size_t height, uint32_t seed)
     : m_grid(width, height)
@@ -258,6 +260,69 @@ void MazePrinter::PrintInConsoleBold(Maze* maze, std::optional<cref_type<path_co
             std::cout << "#" << std::endl;
         }
     }
+}
+
+void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
+{
+    char robotChar = 'a';
+
+    auto isRobotPos = [&](size_t x, size_t y) -> bool
+    {
+        for (size_t i = 0; i < robots.size(); ++i)
+        {
+            if (robots[i]->getPos().x == x && robots[i]->getPos().y == y)
+            {
+                robotChar += i;
+                return true;
+            }
+        }
+        return false;
+    };
+
+    for (size_t y = 0; y < maze->getHeight(); y++)
+    {
+        for (size_t x = 0; x < maze->getWidth(); x++)
+        {
+            if (isRobotPos(x,y))
+            {
+                std::stringstream oss;
+                oss << "#" << robotChar;
+                std::cout << (!(*maze)[x][y].hasPath(Direction::NORTH) ? "##" : "# ");
+            }
+            else
+            {
+                std::cout << (!(*maze)[x][y].hasPath(Direction::NORTH) ? "##" : "# ");
+            }
+
+            robotChar = 'a';
+        }
+        std::cout << "#" << std::endl;
+
+        for (size_t x = 0; x < maze->getWidth(); x++)
+        {
+            if (isRobotPos(x, y))
+            {
+                std::stringstream oss1, oss2;
+                oss1 << "#" << robotChar;
+                oss2 << " " << robotChar;
+                std::cout << (!(*maze)[x][y].hasPath(Direction::WEST) ? oss1.str() : oss2.str());
+            }
+            else
+            {
+                std::cout << (!(*maze)[x][y].hasPath(Direction::WEST) ? "# " : "  ");
+            }
+
+            robotChar = 'a';
+        }
+        std::cout << "#" << std::endl;
+    }
+
+    for (size_t x = 0; x < maze->getWidth(); x++)
+    {
+        std::cout << "##";
+    }
+
+    std::cout << "#" << std::endl;
 }
 
 std::shared_ptr<Maze> SimpleMazeCreator::createMaze(size_t width, size_t height, std::optional<uint32_t> seed) const

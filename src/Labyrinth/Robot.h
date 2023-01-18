@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <array>
 
 #include "utility/RandomGenerator.h"
 #include "Pathfinding.h"
@@ -25,6 +26,8 @@ public:
     {
         m_path = m_finder->invoke(m_start,m_goal,Vec2i::Manhattan);
     }
+
+    inline constexpr Vec2i getPos() const { return m_pos; }
 
     virtual bool move() = 0;
 
