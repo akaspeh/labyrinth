@@ -137,6 +137,8 @@ private:
     bool m_update;
 };
 
+class IRobot;
+
 class MazePrinter
 {
 public:
@@ -153,6 +155,7 @@ public:
         std::optional<cref_type<path_container_type>> path = std::nullopt);
     static void PrintInConsoleBold(Maze* maze,
         std::optional<cref_type<path_container_type>> path = std::nullopt);
+    static void PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots);
 };
 
 class MazeFactory
