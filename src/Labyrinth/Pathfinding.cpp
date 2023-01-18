@@ -8,6 +8,12 @@ Pathfinder::Pathfinder(const std::shared_ptr<Maze>& maze)
 {
 }
 
+void Pathfinder::reset()
+{
+    m_pathList.clear();
+    m_closedList.clear();
+}
+
 std::vector<Vec2i> Pathfinder::invoke(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic)
 {
     static Vec2i neighbors[] = {
@@ -18,11 +24,10 @@ std::vector<Vec2i> Pathfinder::invoke(const Vec2i& start, const Vec2i& goal, con
     };
 
     size_t sz = m_dimensions.x * m_dimensions.y;
-    m_pathList.clear();
+    reset();
     m_pathList.resize(sz);
-    m_closedList.clear();
     m_closedList.resize(sz, false);
-    std::priority_queue<Node> openList;
+    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openList; // ...
 
     m_pathList[toIndex1D(start)].parent = start; // assign start parent to start so we could recreate the path
     openList.push(Node{ .pos = start }); // just assign pos, everything else is zero-initialized
