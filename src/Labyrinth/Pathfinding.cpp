@@ -22,21 +22,22 @@ std::vector<Vec2i> Pathfinder::invoke(const Vec2i& start, const Vec2i& goal, con
     m_pathList.resize(sz);
     m_closedList.clear();
     m_closedList.resize(sz, false);
+    std::priority_queue<Node> openList;
 
     m_pathList[toIndex1D(start)].parent = start; // assign start parent to start so we could recreate the path
-    m_openList.push(Node{ .pos = start }); // just assign pos, everything else is zero-initialized
+    openList.push(Node{ .pos = start }); // just assign pos, everything else is zero-initialized
     Vec2i currentPos;
 
-    while (!m_openList.empty())
+    while (!openList.empty())
     {
-        currentPos = m_openList.top().pos; // get node with least f value (g + h, to be exact)
+        currentPos = openList.top().pos; // get node with least f value (g + h, to be exact)
         if (currentPos == goal)
         {
             break;
         }
 
         // Mark node as closed one (as we just traversed it)
-        m_openList.pop();
+        openList.pop();
         m_closedList[toIndex1D(currentPos)] = true;
 
         for (const Vec2i& v : neighbors)
@@ -58,7 +59,7 @@ std::vector<Vec2i> Pathfinder::invoke(const Vec2i& start, const Vec2i& goal, con
             if (neighborF == 0 || f < neighborF)
             {
                 Node n = { neighborPos, currentPos, g, h };
-                m_openList.push(n);
+                openList.push(n);
                 m_pathList[index] = n;
             }
         }

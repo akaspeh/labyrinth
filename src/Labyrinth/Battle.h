@@ -46,6 +46,16 @@ public:
 
             std::cout << "Iteration!\n";
             // TODO: Add pathfinding for each robot, update their paths and positions
+            if(m_maze->getUpdateState())
+            {
+                for (IRobot* robot : m_robotManager.GetRobots())
+                {
+                    robot->UpdatePath();
+                }
+                m_maze->handleUpdate();
+            }
+            std::cout << "size:" << m_robotManager.GetRobots().size() << "\n";
+
             for (IRobot* robot : m_robotManager.GetRobots())
             {
                 robot->move();

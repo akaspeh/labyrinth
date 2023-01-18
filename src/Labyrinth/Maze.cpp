@@ -17,7 +17,7 @@ Maze::Maze(size_t width, size_t height, uint32_t seed)
 
 Maze::Maze(size_t width, size_t height)
     : m_grid(width, height)
-    , m_update(false)
+    , m_update(true)
 {
     RandomGenerator::setSeed();
     CreateMaze();
@@ -87,36 +87,23 @@ void Maze::CreateMaze()
     }
 }
 
-void Maze::breakWall(const Vec2i& pos, Direction dir)
+void Maze::breakWall(const Vec2i& pos, const Vec2i& delta)
 {
-    static constexpr std::array<Vec2i, 4> directions = {
-            Vec2i( 0, -1),
-            Vec2i( 1,  0),
-            Vec2i( 0,  1),
-            Vec2i(-1,  0),
-    };
-    Vec2i delta;
-
-    switch(dir){
-        case Direction::NORTH:{
-            delta = Vec2i(0,-1);
-        }
-        case Direction::SOUTH:{
-            delta = Vec2i(0,1);
-        }
-        case Direction::WEST:{
-            delta = Vec2i(1,0);
-        }
-        case Direction::EAST:{
-            delta = Vec2i(-1,0);
-        }
-    }
-
     Cell& cell = m_grid[pos.x][pos.y];
     Vec2i npos = pos + delta;
+    if(cell.hasPath((Direction) delta))
+    {
+        return;
+    }
+    if (npos.x < 0 || npos.y < 0 ||
+        npos.x > m_grid.getWidth() - 1 || npos.y > m_grid.getHeight() - 1)
+    {
+        return;
+    }
     Cell& ncell = m_grid[npos.x][npos.y];
-    cell.breakWall(dir);
-    ncell.breakWall(getOpposite(dir));
+    cell.breakWall((Direction) delta);
+    ncell.breakWall(getOpposite((Direction) delta));
+    m_update = true;
 }
 
 void MazePrinter::PrintInConsole(Maze* maze, std::optional<cref_type<path_container_type>> path)
