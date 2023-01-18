@@ -51,7 +51,6 @@ private:
     inline constexpr size_t toIndex1D(const Vec2i& v) const { return static_cast<size_t>((v.y * m_dimensions.x) + v.x); };
 
 private:
-    std::priority_queue<Node> m_openList;    
     std::vector<Node> m_pathList;
     std::vector<bool> m_closedList;
     Vec2i m_dimensions;
