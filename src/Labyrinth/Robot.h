@@ -1,55 +1,159 @@
 #pragma once
 
+#include <algorithm>
 #include <memory>
 
+#include "utility/RandomGenerator.h"
 #include "Pathfinding.h"
 #include "Maze.h"
+
 
 class IRobot
 {
 public:
-    IRobot(const std::shared_ptr<Maze>& maze)
+    IRobot(const std::shared_ptr<Pathfinder>& pathfinder,
+           const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
         : m_maze(maze)
+        , m_start(start)
+        , m_goal(goal)
+        , m_finder(pathfinder)
     {
     }
     virtual ~IRobot() = default;
 
-    virtual void move(const Vec2i& pos) = 0;
+    void UpdatePath()
+    {
+        m_path = m_finder->invoke(m_start,m_goal,Vec2i::Manhattan);
+    }
+
+    virtual bool move() = 0;
 
 protected:
     Vec2i m_pos;
+    Vec2i m_start;
+    Vec2i m_goal;
+    std::vector<Vec2i> m_path;
     std::shared_ptr<Maze> m_maze;
+    std::shared_ptr<Pathfinder> m_finder;
 }; // IRobot class
 
-class FastRobot : public IRobot
+class BoomRobot : public IRobot
 {
 public:
-    FastRobot(const std::shared_ptr<Maze>& maze)
-        : IRobot(maze)
+    BoomRobot(const std::shared_ptr<Pathfinder>& pathfinder,
+    const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal,int32_t chance)
+        : IRobot(pathfinder,maze,start,goal)
+        , m_chance(std::min(chance,100))
     {
     }
-    virtual ~FastRobot() = default;
+    virtual ~BoomRobot() = default;
 
-    virtual void move(const Vec2i& pos)
+    bool boom()
     {
-        // Do smth
+        int32_t result = RandomGenerator::generateIndex(0,100);
+
+        if(!(result < m_chance)){
+            return false;
+        }
+        int32_t x = m_pos.x;
+        int32_t y = m_pos.y;
+        Maze& maze = *m_maze.get();
+        Cell& cell = maze[x][y];
+        static constexpr std::array<Vec2i, 4> directions = {
+                Vec2i( 0, -1),
+                Vec2i( 1,  0),
+                Vec2i( 0,  1),
+                Vec2i(-1,  0),
+        };
+        for(const Vec2i& delta : directions)
+        {
+            Vec2i npos = m_pos + delta;
+            if (npos.x < 0 || npos.y < 0 ||
+                npos.x > m_maze->getWidth() - 1 || npos.y > m_maze->getHeight() - 1)
+            {
+                continue;
+            }
+            Cell& ncell = (*m_maze)[npos.x][npos.y];
+            cell.breakWall((Direction) delta);
+            ncell.breakWall(getOpposite((Direction) delta));
+        }
+        return true;
     }
-}; // FastRobot class
+
+    virtual bool move() override
+    {
+        std::cout << "start!\n";
+        if(m_path.empty())
+        {
+            return true;
+        }
+        m_pos = m_path.front();
+        m_path.erase(m_path.begin());
+        std::cout << "preboom!\n";
+        if(boom())
+        {
+            std::cout << "BOOM!\n";
+        }
+        return false;
+    }
+private:
+    int32_t m_chance;
+}; // BoomRobot class
+
+class MediumRobot : public IRobot
+{
+public:
+    MediumRobot(const std::shared_ptr<Pathfinder>& pathfinder,
+                const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
+            : IRobot(pathfinder,maze,start,goal)
+    {
+    }
+    virtual ~MediumRobot() = default;
+
+    virtual bool move()
+    {
+        if(m_path.empty())
+        {
+            return true;
+        }
+        m_pos = m_path.front();
+        m_path.erase(m_path.begin());
+    }
+}; // MediumRobot class
 
 class SlowRobot : public IRobot
 {
 public:
-    SlowRobot(const std::shared_ptr<Maze>& maze)
-        : IRobot(maze)
+    SlowRobot(const std::shared_ptr<Pathfinder>& pathfinder,
+              const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
+        : IRobot(pathfinder,maze,start,goal)
     {
     }
     virtual ~SlowRobot() = default;
 
-    virtual void move(const Vec2i& pos)
+    virtual bool move()
+    {
+
+    }
+}; // SlowRobot class
+
+class AngryRobot : public IRobot
+{
+public:
+    AngryRobot(const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal,
+               const std::shared_ptr<Pathfinder>& pathfinder)
+            : IRobot(pathfinder,maze,start,goal)
+    {
+    }
+    virtual ~AngryRobot() = default;
+
+    virtual bool move()
     {
         // Do smth
     }
-}; // SlowRobot class
+}; // AngryRobot class
+
+
 
 template<typename T>
 static constexpr bool isRobot = std::is_base_of_v<IRobot, T>;
@@ -57,16 +161,19 @@ static constexpr bool isRobot = std::is_base_of_v<IRobot, T>;
 class RobotManager
 {
 public:
-    RobotManager(const std::shared_ptr<Maze>& maze)
+    RobotManager(const std::shared_ptr<Maze>& maze,const std::shared_ptr<Pathfinder>& pathfinder)
         : m_maze(maze)
+        , m_pathfinder(pathfinder)
     {
     }
     ~RobotManager() = default;
 
-    template<typename T>
-    std::enable_if_t<isRobot<T>, T*> AddRobot()
+    template<typename T, typename... Args>
+    std::enable_if_t<isRobot<T>, T*> AddRobot(Args&&... args)
     {
-        return (T*) m_robots.push_back(new T(m_maze));
+        IRobot* robot = m_robots.emplace_back(new T (m_pathfinder, std::forward<Args>(args)...));
+        robot->UpdatePath();
+        return (T*) robot;
     }
 
     inline constexpr std::vector<IRobot*>& GetRobots() { return m_robots; }
