@@ -251,19 +251,27 @@ void MazePrinter::PrintInConsoleBold(Maze* maze, std::optional<cref_type<path_co
 
 void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
 {
-    char robotChar = 'a';
+    char robotChar;
+    size_t robotsOnOneCell = 0;
 
-    auto isRobotPos = [&](size_t x, size_t y) -> bool
+    auto isRobotPos = [&](size_t x, size_t y) -> void
     {
         for (size_t i = 0; i < robots.size(); ++i)
         {
             if (robots[i]->getPos().x == x && robots[i]->getPos().y == y)
             {
-                robotChar += i;
-                return true;
+                if (robotsOnOneCell > 0)
+                {
+                    ++robotsOnOneCell;
+                    robotChar = static_cast<char>(robotsOnOneCell);
+                }
+                else
+                {
+                    robotChar = robots[i]->getRobotChar();
+                    ++robotsOnOneCell;
+                }
             }
         }
-        return false;
     };
 
     for (size_t y = 0; y < maze->getHeight(); y++)
@@ -276,7 +284,8 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
 
         for (size_t x = 0; x < maze->getWidth(); x++)
         {
-            if (isRobotPos(x, y))
+            isRobotPos(x, y);
+            if (robotsOnOneCell > 0)
             {
                 std::stringstream oss1, oss2;
                 oss1 << "#" << robotChar;
@@ -287,8 +296,7 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
             {
                 std::cout << (!(*maze)[x][y].hasPath(Direction::WEST) ? "# " : "  ");
             }
-
-            robotChar = 'a';
+            robotsOnOneCell = 0;
         }
         std::cout << "#" << std::endl;
     }
