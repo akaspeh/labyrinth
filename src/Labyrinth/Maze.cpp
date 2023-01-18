@@ -250,7 +250,7 @@ void MazePrinter::PrintInConsoleBold(Maze* maze, std::optional<cref_type<path_co
     }
 }
 
-void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
+void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots, Vec2i& goal)
 {
     std::array<char, static_cast<size_t>(Robots::UNKNOWN)> robotSymbols = {
         'A',
@@ -285,6 +285,23 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots)
 
         for (size_t x = 0; x < maze->getWidth(); x++)
         {
+            if (goal.x == x && goal.y == y)
+            {
+                std::stringstream oss;
+                oss << "0";
+
+                if (!(*maze)[x][y].hasPath(Direction::WEST))
+                {
+                    std::cout << "#";
+                    PrintColorful(oss.str(), 5);
+                }
+                else
+                {
+                    PrintColorful(oss.str(), 5);
+                }
+                continue;
+            }
+
             isRobotPos(x, y);
             if (robotsOnOneCell > 0)
             {

@@ -48,6 +48,8 @@ public:
     inline constexpr Robots getRobotType() const { return m_robotType; }
 
     inline constexpr Vec2i getPos() const { return m_pos; }
+
+    inline constexpr Vec2i getGoal() const { return m_goal; }
 protected:
     Vec2i m_pos;
     Vec2i m_start;
