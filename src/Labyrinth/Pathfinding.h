@@ -16,7 +16,7 @@ struct Node
     uint32_t g = 0; // distance from starting node to current
     uint32_t h = 0; // heuristic distance to the goal
 
-    inline bool operator<(const Node& rhs) const { return (g + h) < (rhs.g + rhs.h); }
+    inline bool operator>(const Node& rhs) const { return (g + h) > (rhs.g + rhs.h); }
 };
 
 /**
@@ -32,6 +32,8 @@ public:
 public:
     Pathfinder(const std::shared_ptr<Maze>& maze);
     ~Pathfinder() = default;
+
+    void reset();
 
     std::vector<Vec2i> invoke(const Vec2i& start, const Vec2i& goal, const HeuristicFn& heuristic);
 private:

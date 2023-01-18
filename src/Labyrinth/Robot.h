@@ -16,7 +16,6 @@ public:
            const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
         : m_pos(start)
         , m_maze(maze)
-        , m_start(start)
         , m_goal(goal)
         , m_finder(pathfinder)
     {
@@ -26,7 +25,7 @@ public:
 
     virtual void UpdatePath()
     {
-        m_path = m_finder->invoke(m_start,m_goal,Vec2i::Manhattan);
+        m_path = m_finder->invoke(m_pos, m_goal, Vec2i::Manhattan);
     }
 
     inline constexpr Vec2i getPos() const { return m_pos; }
@@ -35,7 +34,6 @@ public:
 
 protected:
     Vec2i m_pos;
-    Vec2i m_start;
     Vec2i m_goal;
     std::vector<Vec2i> m_path;
     std::shared_ptr<Maze> m_maze;
@@ -76,17 +74,15 @@ public:
 
     virtual bool move() override
     {
-        std::cout << "start!\n";
         if(m_path.empty())
         {
             return true;
         }
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
-        std::cout << "preboom!\n";
         if(boom())
         {
-            std::cout << "BOOM!\n";
+            std::cout << "[LOG]: BOOM! BoomRobot has exploded...\n";
         }
         return false;
     }
@@ -186,6 +182,17 @@ public:
     {
         IRobot* robot = m_robots.emplace_back(new T (m_pathfinder, std::forward<Args>(args)...));
         return (T*) robot;
+    }
+
+    void Reset()
+    {
+        // clear robots
+        for(IRobot* robot : m_robots)
+        {
+            delete robot;
+        }
+        m_robots.clear();
+        m_pathfinder->reset();
     }
 
     inline constexpr std::vector<IRobot*>& GetRobots() { return m_robots; }
