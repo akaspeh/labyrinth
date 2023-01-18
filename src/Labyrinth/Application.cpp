@@ -27,6 +27,24 @@ Application::Application(std::shared_ptr<MazeFactory> factory)
     std::cout << "Aplication start" << std::endl;
 }
 
+Application* Application::GetInstance()
+{
+    return s_instance;
+}
+
+void Application::Init(std::shared_ptr<MazeFactory> factory)
+{
+    if (!s_instance)
+    {
+        s_instance = new Application(factory);
+    }
+}
+
+void Application::Deinit()
+{
+    delete s_instance;
+}
+
 void Application::Run()
 {
     bool stopped = false;
