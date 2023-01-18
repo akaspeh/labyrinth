@@ -109,7 +109,7 @@ public:
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
     }
-}; // MediumRobot class
+}; // SimpleRobot class
 
 class SlowRobot : public IRobot
 {
@@ -124,7 +124,7 @@ public:
 
     virtual void UpdatePath() override
     {
-        m_path = m_finder->invoke(m_start, m_midPoint, Vec2i::Manhattan);
+        m_path = m_finder->invoke(m_pos, m_midPoint, Vec2i::Manhattan);
         std::vector<Vec2i> secondPath = m_finder->invoke(m_midPoint, m_goal, Vec2i::Manhattan);
         m_path.insert(m_path.end(), secondPath.begin(), secondPath.end());
     }
@@ -138,6 +138,8 @@ public:
 
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
+
+        std::cout << "Middle point: " << m_midPoint.x << " " << m_midPoint.y << std::endl;
 
         return false;
     }
