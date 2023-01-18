@@ -23,6 +23,7 @@ public:
     IRobot(const std::shared_ptr<Pathfinder>& pathfinder,
            const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal, const Robots& robotType)
         : m_pos(start)
+        , m_start(start)
         , m_maze(maze)
         , m_goal(goal)
         , m_finder(pathfinder)
@@ -36,6 +37,11 @@ public:
     {
         m_path = m_finder->invoke(m_pos, m_goal, Vec2i::Manhattan);
     }
+    virtual void reset()
+    {
+        m_pos = m_start;
+        UpdatePath();
+    }
 
     virtual bool move() = 0;
 
@@ -44,6 +50,7 @@ public:
     inline constexpr Vec2i getPos() const { return m_pos; }
 protected:
     Vec2i m_pos;
+    Vec2i m_start;
     Vec2i m_goal;
     std::vector<Vec2i> m_path;
     std::shared_ptr<Maze> m_maze;
@@ -216,10 +223,10 @@ public:
         // clear robots
         for(IRobot* robot : m_robots)
         {
-            delete robot;
+            robot->reset();
         }
-        m_robots.clear();
         m_pathfinder->reset();
+
     }
 
     inline constexpr std::vector<IRobot*>& GetRobots() { return m_robots; }
