@@ -106,6 +106,7 @@ public:
         {
             return true;
         }
+
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
     }
@@ -151,17 +152,28 @@ private:
 class AngryRobot : public IRobot
 {
 public:
-    AngryRobot(const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal,
-               const std::shared_ptr<Pathfinder>& pathfinder)
+    AngryRobot(const std::shared_ptr<Pathfinder>& pathfinder, const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
             : IRobot(pathfinder,maze,start,goal)
+            , m_prevpos(0)
     {
     }
     virtual ~AngryRobot() = default;
 
     virtual bool move()
     {
-        // Do smth
+        if(m_path.empty())
+        {
+            return true;
+        }
+        m_prevpos = m_pos;
+        m_pos = m_path.front();
+        Vec2i delta = m_pos - m_prevpos;
+        m_maze->breakWall(m_pos,delta);
+        std::cout << "[LOG]: GRAAAA! AngryRobot has punched wall..\n";
+        m_path.erase(m_path.begin());
     }
+private:
+    Vec2i m_prevpos;
 }; // AngryRobot class
 
 
