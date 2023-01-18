@@ -130,8 +130,8 @@ public:
     void breakWall(const Vec2i& pos, const Vec2i& delta);
     inline constexpr bool getUpdateState() const { return m_update; }
     inline void handleUpdate(){ m_update = false; }
-private:
-    void CreateMaze();
+
+    void UpdateMaze();
 private:
     Grid m_grid;
     bool m_update;

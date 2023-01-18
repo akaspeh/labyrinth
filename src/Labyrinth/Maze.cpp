@@ -12,7 +12,7 @@ Maze::Maze(size_t width, size_t height, uint32_t seed)
     : m_grid(width, height)
 {
     RandomGenerator::setSeed(static_cast<std::random_device::result_type>(seed));
-    CreateMaze();
+    UpdateMaze();
 }
 
 Maze::Maze(size_t width, size_t height)
@@ -20,10 +20,10 @@ Maze::Maze(size_t width, size_t height)
     , m_update(true)
 {
     RandomGenerator::setSeed();
-    CreateMaze();
+    UpdateMaze();
 }
 
-void Maze::CreateMaze()
+void Maze::UpdateMaze()
 {
     // pair (x, y) - position in the grid
     std::stack<Vec2i> mazeStack;

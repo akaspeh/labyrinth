@@ -23,7 +23,7 @@ public:
     }
     virtual ~IRobot() = default;
 
-    void UpdatePath()
+    virtual void UpdatePath()
     {
         m_path = m_finder->invoke(m_pos, m_goal, Vec2i::Manhattan);
     }
@@ -90,15 +90,15 @@ private:
     int32_t m_chance;
 }; // BoomRobot class
 
-class MediumRobot : public IRobot
+class SimpleRobot : public IRobot
 {
 public:
-    MediumRobot(const std::shared_ptr<Pathfinder>& pathfinder,
+    SimpleRobot(const std::shared_ptr<Pathfinder>& pathfinder,
                 const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
             : IRobot(pathfinder,maze,start,goal)
     {
     }
-    virtual ~MediumRobot() = default;
+    virtual ~SimpleRobot() = default;
 
     virtual bool move()
     {
@@ -110,22 +110,43 @@ public:
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
     }
-}; // MediumRobot class
+}; // SimpleRobot class
 
 class SlowRobot : public IRobot
 {
 public:
     SlowRobot(const std::shared_ptr<Pathfinder>& pathfinder,
               const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
-        : IRobot(pathfinder,maze,start,goal)
+        : IRobot(pathfinder,maze,start,goal),
+        m_midPoint(RandomGenerator::generateCellCoords(m_maze.get()))
     {
     }
     virtual ~SlowRobot() = default;
 
+    virtual void UpdatePath() override
+    {
+        m_path = m_finder->invoke(m_pos, m_midPoint, Vec2i::Manhattan);
+        std::vector<Vec2i> secondPath = m_finder->invoke(m_midPoint, m_goal, Vec2i::Manhattan);
+        m_path.insert(m_path.end(), secondPath.begin(), secondPath.end());
+    }
+
     virtual bool move()
     {
+        if (m_path.empty())
+        {
+            return true;
+        }
 
+        m_pos = m_path.front();
+        m_path.erase(m_path.begin());
+
+        std::cout << "Middle point: " << m_midPoint.x << " " << m_midPoint.y << std::endl;
+
+        return false;
     }
+private:
+    Vec2i m_midPoint;
+
 }; // SlowRobot class
 
 class AngryRobot : public IRobot
