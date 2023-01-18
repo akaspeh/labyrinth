@@ -7,7 +7,9 @@
 int main()
 {
     std::shared_ptr<MazeFactory> mazeFactory = std::make_shared<SimpleMazeCreator>();
-    std::unique_ptr<Application> application = std::make_unique<Application>(mazeFactory);
-    application->Run();
+    Application::Init(mazeFactory);
+    Application* app = Application::GetInstance();
+    app->Run();
+    Application::Deinit();
     return 0;
 }
