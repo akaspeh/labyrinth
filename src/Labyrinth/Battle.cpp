@@ -9,7 +9,7 @@ void BattleContext::Reset()
 void BattleContext::Run()
 {
     Reset();
-    m_robotManager.AddRobot<BoomRobot>(m_maze,Vec2i(0),Vec2i(5),100);
+    m_robotManager.AddRobot<AngryRobot>(m_maze,Vec2i(0),Vec2i(5));
     static constexpr char VALID_CHAR = 'a';
     while (!ShouldClose())
     {
