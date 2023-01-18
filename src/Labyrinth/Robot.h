@@ -48,6 +48,8 @@ public:
     inline constexpr Robots getRobotType() const { return m_robotType; }
 
     inline constexpr Vec2i getPos() const { return m_pos; }
+
+    inline constexpr Vec2i getGoal() const { return m_goal; }
 protected:
     Vec2i m_pos;
     Vec2i m_start;
@@ -127,6 +129,8 @@ public:
 
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
+
+        return false;
     }
 }; // SimpleRobot class
 
@@ -158,7 +162,7 @@ public:
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
 
-        std::cout << "[LOG]: Middle point - " << m_midPoint.x << " " << m_midPoint.y << "." << std::endl;
+        std::cout << "[LOG]: SlowRobot middle point - " << m_midPoint.x << " " << m_midPoint.y << "." << std::endl;
 
         return false;
     }

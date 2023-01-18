@@ -39,7 +39,9 @@ void BattleContext::Run()
             m_maze->handleUpdate();
         }
 
-        MazePrinter::PrintInConsoleRobots(m_maze.get(), m_robotManager.GetRobots());
+        Vec2i goal = m_robotManager.GetRobots()[0]->getGoal();
+
+        MazePrinter::PrintInConsoleRobots(m_maze.get(), m_robotManager.GetRobots(), goal);
     }
     Reset();
 }
