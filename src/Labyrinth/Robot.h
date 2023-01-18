@@ -13,11 +13,13 @@ class IRobot
 public:
     IRobot(const std::shared_ptr<Pathfinder>& pathfinder,
            const std::shared_ptr<Maze>& maze, const Vec2i& start, const Vec2i& goal)
-        : m_maze(maze)
+        : m_pos(start)
+        , m_maze(maze)
         , m_start(start)
         , m_goal(goal)
         , m_finder(pathfinder)
     {
+        UpdatePath();
     }
     virtual ~IRobot() = default;
 
@@ -55,10 +57,7 @@ public:
         if(!(result < m_chance)){
             return false;
         }
-        int32_t x = m_pos.x;
-        int32_t y = m_pos.y;
-        Maze& maze = *m_maze.get();
-        Cell& cell = maze[x][y];
+
         static constexpr std::array<Vec2i, 4> directions = {
                 Vec2i( 0, -1),
                 Vec2i( 1,  0),
@@ -67,15 +66,7 @@ public:
         };
         for(const Vec2i& delta : directions)
         {
-            Vec2i npos = m_pos + delta;
-            if (npos.x < 0 || npos.y < 0 ||
-                npos.x > m_maze->getWidth() - 1 || npos.y > m_maze->getHeight() - 1)
-            {
-                continue;
-            }
-            Cell& ncell = (*m_maze)[npos.x][npos.y];
-            cell.breakWall((Direction) delta);
-            ncell.breakWall(getOpposite((Direction) delta));
+            m_maze->breakWall(m_pos,delta);
         }
         return true;
     }
@@ -172,7 +163,6 @@ public:
     std::enable_if_t<isRobot<T>, T*> AddRobot(Args&&... args)
     {
         IRobot* robot = m_robots.emplace_back(new T (m_pathfinder, std::forward<Args>(args)...));
-        robot->UpdatePath();
         return (T*) robot;
     }
 
