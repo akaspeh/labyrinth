@@ -19,8 +19,8 @@ static void waitForEnter()
     std::cin.get();
 }
 
-Application::Application(std::shared_ptr<MazeFactory> factory)
-    : m_maze(factory->createMaze(10, 10, 1)) // Temp hardcode. Replace with factory
+Application::Application(std::shared_ptr<MazeFactory> factory, size_t Height, size_t Width, size_t seed)
+    : m_maze(factory->createMaze(Width, Height, seed))
     , m_pathfinder(std::make_shared<Pathfinder>(m_maze))
     , m_battle(m_maze)
 {
@@ -32,11 +32,11 @@ Application* Application::GetInstance()
     return s_instance;
 }
 
-void Application::Init(std::shared_ptr<MazeFactory> factory)
+void Application::Init(std::shared_ptr<MazeFactory> factory, size_t Height, size_t Width, size_t seed)
 {
     if (!s_instance)
     {
-        s_instance = new Application(factory);
+        s_instance = new Application(factory,Height,Width,seed);
     }
 }
 

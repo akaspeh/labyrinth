@@ -31,8 +31,8 @@ public:
     inline constexpr bool ShouldClose() const { return m_closed; }
     inline void Close() { m_closed = true; }
 
-    inline constexpr RobotManager& GetRobotManager() { return m_robotManager; } 
-    inline constexpr const RobotManager& GetRobotManager() const { return m_robotManager; } 
+    inline constexpr RobotManager& GetRobotManager() { return m_robotManager; }
+    inline constexpr const RobotManager& GetRobotManager() const { return m_robotManager; }
 
 private:
     std::shared_ptr<Maze> m_maze;

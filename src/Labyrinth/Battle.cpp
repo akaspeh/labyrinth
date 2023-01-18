@@ -2,14 +2,13 @@
 
 void BattleContext::Reset()
 {
+    m_maze->UpdateMaze();
     m_robotManager.Reset();
     m_closed = false;
 }
 
 void BattleContext::Run()
 {
-    Reset();
-    m_robotManager.AddRobot<AngryRobot>(m_maze,Vec2i(0),Vec2i(5));
     static constexpr char VALID_CHAR = 'a';
     while (!ShouldClose())
     {
@@ -42,4 +41,5 @@ void BattleContext::Run()
 
         MazePrinter::PrintInConsoleRobots(m_maze.get(), m_robotManager.GetRobots());
     }
+    Reset();
 }
