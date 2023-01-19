@@ -58,23 +58,26 @@ void Application::Run()
         std::cout << "Else - Exit\n";
 
         uint32_t opcode;
+
         std::cin >> opcode;
-        if (std::cin.fail())
+
+        while (std::cin.fail())
         {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cin >> opcode;
         }
 
         switch (opcode)
         {
-        case START_BATTLE:
+            case Opcode::START_BATTLE:
             m_battle.Run();
             break;
-        case PRINT_MAZE:
+        case Opcode::PRINT_MAZE:
             MazePrinter::PrintInConsole(m_maze.get());
             waitForEnter();
             break;
-        case PRINT_PATH:
+        case Opcode::PRINT_PATH:
         {
             std::cout << "Print coordinates of start and end points!\n";
             std::cout << "Start point: ";
