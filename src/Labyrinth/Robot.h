@@ -90,7 +90,7 @@ public:
                 Vec2i( 0,  1),
                 Vec2i(-1,  0),
         };
-        for(const Vec2i& delta : directions)
+        for(const Vec2i& delta : directions) //break a wall in 4 directions
         {
             m_maze->breakWall(m_pos,delta);
         }
@@ -104,7 +104,7 @@ public:
             m_arrived = true;
             return;
         }
-        m_pos = m_path.front();
+        m_pos = m_path.front();    //next point
         m_path.erase(m_path.begin());
         if(boom())
         {
@@ -133,7 +133,7 @@ public:
             return;
         }
 
-        m_pos = m_path.front();
+        m_pos = m_path.front();  //next point
         m_path.erase(m_path.begin());
 
         return;
@@ -173,7 +173,7 @@ public:
             return;
         }
 
-        m_pos = m_path.front();
+        m_pos = m_path.front();   //next point
         m_path.erase(m_path.begin());
 
         std::cout << "[LOG]: SlowRobot middle point - " << m_midPoint.x << " " << m_midPoint.y << "." << std::endl;
@@ -200,8 +200,8 @@ public:
             m_arrived = true;
             return;
         }
-        m_prevpos = m_pos;
-        m_pos = m_path.front();
+        m_prevpos = m_pos;     //prev point
+        m_pos = m_path.front();    //next point
         Vec2i delta = m_pos - m_prevpos;
         if (m_maze->breakWall(m_pos, delta))
         {
