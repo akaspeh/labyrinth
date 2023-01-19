@@ -26,6 +26,9 @@ Maze::Maze(size_t width, size_t height)
 
 void Maze::UpdateMaze()
 {
+    size_t w = m_grid.getWidth();
+    size_t h = m_grid.getHeight();
+    m_grid = Grid(w, h);
     // pair (x, y) - position in the grid
     std::stack<Vec2i> mazeStack;
 
