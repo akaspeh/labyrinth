@@ -11,13 +11,13 @@ public:
     RandomGenerator(const RandomGenerator& randomGenerator) = delete;
     RandomGenerator operator=(const RandomGenerator& randomGenerator) = delete;
 
-    static void setSeed(std::optional<std::random_device::result_type> seed = std::nullopt);
+    static void setSeed(uint32_t seed = 0);
 
-    static size_t generateIndex(size_t from, size_t to);
+    static size_t generateIndex(size_t from, size_t to, uint32_t seed = 0);
     static Vec2i generateCellCoords(Maze* maze);
 
 private:
-    static std::random_device m_randDevice;
-    static std::random_device::result_type m_seed;
-    static std::mt19937 m_randGenerator;
+    static inline std::random_device m_randDevice;
+    static inline std::random_device::result_type m_seed;
+    static inline std::mt19937 m_randGenerator;
 };

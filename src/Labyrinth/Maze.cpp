@@ -12,7 +12,7 @@
 Maze::Maze(size_t width, size_t height, uint32_t seed)
     : m_grid(width, height)
 {
-    RandomGenerator::setSeed(static_cast<std::random_device::result_type>(seed));
+    RandomGenerator::setSeed(seed);
     UpdateMaze();
 }
 
@@ -285,23 +285,6 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots,
 
         for (size_t x = 0; x < maze->getWidth(); x++)
         {
-            if (goal.x == x && goal.y == y)
-            {
-                std::stringstream oss;
-                oss << "0";
-
-                if (!(*maze)[x][y].hasPath(Direction::WEST))
-                {
-                    std::cout << "#";
-                    PrintColorful(oss.str(), 5);
-                }
-                else
-                {
-                    PrintColorful(oss.str(), 5);
-                }
-                continue;
-            }
-
             isRobotPos(x, y);
             if (robotsOnOneCell > 0)
             {
@@ -328,6 +311,22 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots,
                     PrintColorful(oss2.str(), color);
                 }
             }
+            else if (goal.x == x && goal.y == y)
+            {
+                std::stringstream oss;
+                oss << "0";
+
+                if (!(*maze)[x][y].hasPath(Direction::WEST))
+                {
+                    std::cout << "#";
+                    PrintColorful(oss.str(), 5);
+                }
+                else
+                {
+                    std::cout << " ";
+                    PrintColorful(oss.str(), 5);
+                }
+            }
             else
             {
                 std::cout << (!(*maze)[x][y].hasPath(Direction::WEST) ? "# " : "  ");
@@ -345,10 +344,10 @@ void MazePrinter::PrintInConsoleRobots(Maze* maze, std::vector<IRobot*>& robots,
     std::cout << "#" << std::endl;
 }
 
-std::shared_ptr<Maze> SimpleMazeCreator::createMaze(size_t width, size_t height, std::optional<uint32_t> seed) const
+std::shared_ptr<Maze> SimpleMazeCreator::createMaze(size_t width, size_t height, uint32_t seed) const
 {
-    if (seed.has_value())
-        return std::shared_ptr<Maze>(new Maze(width, height, seed.value()));
+    if (seed > 0)
+        return std::shared_ptr<Maze>(new Maze(width, height, seed));
 
     return std::shared_ptr<Maze>(new Maze(width, height));
 }

@@ -18,14 +18,14 @@ public:
 
     static Application* GetInstance();
 
-    static void Init(std::shared_ptr<MazeFactory> factory,size_t Height, size_t Width, std::optional<std::random_device::result_type> seed = std::nullopt);
+    static void Init(std::shared_ptr<MazeFactory> factory,size_t Height, size_t Width, uint32_t seed = 0);
     static void Deinit();
 
     void Run();
 
 
 protected:
-    Application(std::shared_ptr<MazeFactory> factory, size_t Height, size_t Width, std::optional<std::random_device::result_type> seed = std::nullopt);
+    Application(std::shared_ptr<MazeFactory> factory, size_t Height, size_t Width, uint32_t seed = 0);
 
 private:
     std::shared_ptr<Maze> m_maze;

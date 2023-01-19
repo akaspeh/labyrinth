@@ -9,6 +9,8 @@ void BattleContext::Reset()
 
 void BattleContext::Run()
 {
+    std::array<size_t, static_cast<size_t>(Robots::UNKNOWN)> steps;
+    steps.fill(-1);
     static constexpr char VALID_CHAR = 'a';
     while (!ShouldClose())
     {
@@ -25,10 +27,24 @@ void BattleContext::Run()
             Close();
         }
 
+        Vec2i goal = m_robotManager.GetRobots()[0]->getGoal();
+
+        MazePrinter::PrintInConsoleRobots(m_maze.get(), m_robotManager.GetRobots(), goal);
+
         for (IRobot* robot : m_robotManager.GetRobots())
         {
-            robot->move();
+            if (!robot->move())
+            {
+                ++steps[static_cast<size_t>(robot->getRobotType())];
+            }
         }
+
+        std::cout << std::endl;
+        std::cout << "[LOG]: AngryRobot steps - " << steps[static_cast<size_t>(Robots::ANGRY)] << "." << std::endl;
+        std::cout << "[LOG]: BoomRobot steps - " << steps[static_cast<size_t>(Robots::BOOM)] << "." << std::endl;
+        std::cout << "[LOG]: SimpleRobot steps - " << steps[static_cast<size_t>(Robots::SIMPLE)] << "." << std::endl;
+        std::cout << "[LOG]: SlowRobot steps - " << steps[static_cast<size_t>(Robots::SLOW)] << "." << std::endl;
+        std::cout << std::endl;
 
         if(m_maze->getUpdateState())
         {
@@ -38,10 +54,6 @@ void BattleContext::Run()
             }
             m_maze->handleUpdate();
         }
-
-        Vec2i goal = m_robotManager.GetRobots()[0]->getGoal();
-
-        MazePrinter::PrintInConsoleRobots(m_maze.get(), m_robotManager.GetRobots(), goal);
     }
     Reset();
 }
