@@ -131,7 +131,17 @@ void MazePrinter::PrintInConsole(Maze* maze, std::optional<cref_type<path_contai
 
             if (pathWay)
             {
-                std::cout << (!(*maze)[x][y].hasPath(Direction::NORTH) ? "##" : "#.");
+                std::stringstream oss;
+                if (!(*maze)[x][y].hasPath(Direction::NORTH))
+                {
+                    std::cout << "##";
+                }
+                else
+                {
+                    std::cout << "#";
+                    oss << ".";
+                    PrintColorful(oss.str(), 6);
+                }
             }
             else
             {
@@ -148,7 +158,18 @@ void MazePrinter::PrintInConsole(Maze* maze, std::optional<cref_type<path_contai
 
             if (pathWay)
             {
-                std::cout << (!(*maze)[x][y].hasPath(Direction::WEST) ? "#." : "..");
+                std::stringstream oss;
+                oss << ".";
+                if (!(*maze)[x][y].hasPath(Direction::WEST))
+                {
+                    std::cout << "#";
+                    PrintColorful(oss.str(), 6);
+                }
+                else
+                {
+                    std::cout << " ";
+                    PrintColorful(oss.str(), 6);
+                }
             }
             else
             {
