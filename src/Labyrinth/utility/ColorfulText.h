@@ -4,7 +4,7 @@
 #if defined(_WIN32) || defined(WIN32)
 #define NOMINMAX
 #include <Windows.h>
-void PrintColorful(std::string str, size_t color)
+void PrintColorful(const std::string& str, size_t color)
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -16,7 +16,7 @@ void PrintColorful(std::string str, size_t color)
 }
 
 #else
-void PrintColorful(std::string str, size_t color)
+void PrintColorful(const std::string& str, size_t color)
 {
     std::string col = "\033[0m";
 

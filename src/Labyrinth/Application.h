@@ -23,7 +23,6 @@ public:
 
     void Run();
 
-
 protected:
     Application(std::shared_ptr<MazeFactory> factory, size_t Height, size_t Width, uint32_t seed = 0);
 

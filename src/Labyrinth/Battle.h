@@ -20,7 +20,7 @@ public:
     BattleContext(const std::shared_ptr<Maze>& maze)
         : m_maze(maze)
         , m_closed(false)
-        , m_robotManager(maze,std::make_shared<Pathfinder>(maze))
+        , m_robotManager(maze, std::make_shared<Pathfinder>(maze))
     {
     }
     ~BattleContext() = default;
