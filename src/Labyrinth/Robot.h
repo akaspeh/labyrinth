@@ -229,7 +229,13 @@ public:
         , m_pathfinder(pathfinder)
     {
     }
-    ~RobotManager() = default;
+    ~RobotManager()
+    {
+        for(IRobot* robot : m_robots)
+        {
+            delete robot;
+        }
+    }
 
     template<typename T, typename... Args>
     std::enable_if_t<isRobot<T>, T*> AddRobot(Args&&... args)
