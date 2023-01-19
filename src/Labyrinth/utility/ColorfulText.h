@@ -29,7 +29,7 @@ void PrintColorful(std::string str, size_t color)
     "\033[0;33m"
     };
 
-    col = colors[color];
+    col = colors[color % 6];
 
     std::cout << col << str << "\033[0m";
 }
