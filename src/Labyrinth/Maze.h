@@ -164,12 +164,10 @@ public:
     MazeFactory() = default;
     virtual ~MazeFactory() = default;
 
-    virtual std::shared_ptr<Maze> createMaze(size_t width, size_t height, 
-        std::optional<uint32_t> seed = std::nullopt) const = 0;
+    virtual std::shared_ptr<Maze> createMaze(size_t width, size_t height, uint32_t seed = 0) const = 0;
 };
 
 class SimpleMazeCreator : public MazeFactory
 {
-    virtual std::shared_ptr<Maze> createMaze(size_t width, size_t height,
-        std::optional<uint32_t> seed = std::nullopt) const override;
+    virtual std::shared_ptr<Maze> createMaze(size_t width, size_t height, uint32_t seed = 0) const override;
 };

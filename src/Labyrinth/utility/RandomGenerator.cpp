@@ -1,14 +1,10 @@
 #include "RandomGenerator.h"
 
-std::random_device RandomGenerator::m_randDevice;
-std::random_device::result_type RandomGenerator::m_seed;
-std::mt19937 RandomGenerator::m_randGenerator;
-
-void RandomGenerator::setSeed(std::optional<std::random_device::result_type> seed)
+void RandomGenerator::setSeed(uint32_t seed)
 {
-    if (seed.has_value())
+    if (seed > 0)
     {
-        m_seed = seed.value();
+        m_seed = seed;
     }
     else
     {
@@ -19,7 +15,7 @@ void RandomGenerator::setSeed(std::optional<std::random_device::result_type> see
     m_randGenerator = gen;
 }
 
-size_t RandomGenerator::generateIndex(size_t from, size_t to)
+size_t RandomGenerator::generateIndex(size_t from, size_t to, uint32_t seed)
 {
     std::uniform_int_distribution<size_t> randDist(from, to);
     return randDist(m_randGenerator);

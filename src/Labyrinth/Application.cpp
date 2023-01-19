@@ -19,7 +19,7 @@ static void waitForEnter()
     std::cin.get();
 }
 
-Application::Application(std::shared_ptr<MazeFactory> factory, size_t Height, size_t Width, std::optional<std::random_device::result_type> seed)
+Application::Application(std::shared_ptr<MazeFactory> factory, size_t Height, size_t Width, uint32_t seed)
     : m_maze(factory->createMaze(Width, Height, seed))
     , m_pathfinder(std::make_shared<Pathfinder>(m_maze))
     , m_battle(m_maze)
@@ -32,7 +32,7 @@ Application* Application::GetInstance()
     return s_instance;
 }
 
-void Application::Init(std::shared_ptr<MazeFactory> factory, size_t Height, size_t Width, std::optional<std::random_device::result_type> seed)
+void Application::Init(std::shared_ptr<MazeFactory> factory, size_t Height, size_t Width, uint32_t seed)
 {
     if (!s_instance)
     {

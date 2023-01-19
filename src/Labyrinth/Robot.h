@@ -162,6 +162,11 @@ public:
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
 
+        if (m_pos.x == m_goal.x && m_pos.y == m_goal.y)
+        {
+            return false;
+        }
+
         std::cout << "[LOG]: SlowRobot middle point - " << m_midPoint.x << " " << m_midPoint.y << "." << std::endl;
 
         return false;
