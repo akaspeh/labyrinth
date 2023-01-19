@@ -127,7 +127,7 @@ public:
     
     inline constexpr size_t getWidth() const { return m_grid.getWidth(); }  
     inline constexpr size_t getHeight() const { return m_grid.getHeight(); }
-    void breakWall(const Vec2i& pos, const Vec2i& delta);
+    bool breakWall(const Vec2i& pos, const Vec2i& delta);
     inline constexpr bool getUpdateState() const { return m_update; }
     inline void handleUpdate(){ m_update = false; }
 

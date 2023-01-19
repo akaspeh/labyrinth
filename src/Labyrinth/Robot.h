@@ -28,6 +28,7 @@ public:
         , m_goal(goal)
         , m_finder(pathfinder)
         , m_robotType(robotType)
+        , m_arrived(false)
     {
         UpdatePath();
     }
@@ -39,17 +40,20 @@ public:
     }
     virtual void reset()
     {
+        m_arrived = false;
         m_pos = m_start;
         UpdatePath();
     }
 
-    virtual bool move() = 0;
+    virtual void move() = 0;
 
     inline constexpr Robots getRobotType() const { return m_robotType; }
 
     inline constexpr Vec2i getPos() const { return m_pos; }
 
     inline constexpr Vec2i getGoal() const { return m_goal; }
+
+    inline constexpr bool isArrived() const { return m_arrived; }
 protected:
     Vec2i m_pos;
     Vec2i m_start;
@@ -58,6 +62,7 @@ protected:
     std::shared_ptr<Maze> m_maze;
     std::shared_ptr<Pathfinder> m_finder;
     Robots m_robotType;
+    bool m_arrived;
 }; // IRobot class
 
 class BoomRobot : public IRobot
@@ -92,11 +97,12 @@ public:
         return true;
     }
 
-    virtual bool move() override
+    virtual void move() override
     {
         if(m_path.empty())
         {
-            return true;
+            m_arrived = true;
+            return;
         }
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
@@ -104,7 +110,6 @@ public:
         {
             std::cout << "[LOG]: BOOM! BoomRobot has exploded...\n";
         }
-        return false;
     }
 private:
     int32_t m_chance;
@@ -120,17 +125,18 @@ public:
     }
     virtual ~SimpleRobot() = default;
 
-    virtual bool move()
+    virtual void move()
     {
         if(m_path.empty())
         {
-            return true;
+            m_arrived = true;
+            return;
         }
 
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
 
-        return false;
+        return;
     }
 }; // SimpleRobot class
 
@@ -152,25 +158,25 @@ public:
         m_path.insert(m_path.end(), secondPath.begin(), secondPath.end());
     }
 
-    virtual bool move()
+    virtual void move()
     {
         if (m_path.empty())
         {
-            return true;
+            m_arrived = true;
+            return;
         }
 
         if (m_pos.x == m_goal.x && m_pos.y == m_goal.y)
         {
-            return true;
+            m_arrived = true;
             m_path.clear();
+            return;
         }
 
         m_pos = m_path.front();
         m_path.erase(m_path.begin());
 
         std::cout << "[LOG]: SlowRobot middle point - " << m_midPoint.x << " " << m_midPoint.y << "." << std::endl;
-
-        return false;
     }
 private:
     Vec2i m_midPoint;
@@ -187,20 +193,24 @@ public:
     }
     virtual ~AngryRobot() = default;
 
-    virtual bool move()
+    virtual void move()
     {
         if (m_path.empty())
         {
-            return true;
+            m_arrived = true;
+            return;
         }
         m_prevpos = m_pos;
         m_pos = m_path.front();
         Vec2i delta = m_pos - m_prevpos;
-        m_maze->breakWall(m_pos, delta);
-        std::cout << "[LOG]: GRAAAA! AngryRobot has punched wall..\n";
+        if (m_maze->breakWall(m_pos, delta))
+        {
+            std::cout << "[LOG]: GRAAAA! AngryRobot has punched wall..\n";
+        }
+        
         m_path.erase(m_path.begin());
 
-        return false;
+        return;
     }
 private:
     Vec2i m_prevpos;

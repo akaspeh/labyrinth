@@ -88,23 +88,24 @@ void Maze::UpdateMaze()
     }
 }
 
-void Maze::breakWall(const Vec2i& pos, const Vec2i& delta)
+bool Maze::breakWall(const Vec2i& pos, const Vec2i& delta)
 {
     Cell& cell = m_grid[pos.x][pos.y];
     Vec2i npos = pos + delta;
     if(cell.hasPath((Direction) delta))
     {
-        return;
+        return false;
     }
     if (npos.x < 0 || npos.y < 0 ||
         npos.x > m_grid.getWidth() - 1 || npos.y > m_grid.getHeight() - 1)
     {
-        return;
+        return false;
     }
     Cell& ncell = m_grid[npos.x][npos.y];
     cell.breakWall((Direction) delta);
     ncell.breakWall(getOpposite((Direction) delta));
     m_update = true;
+    return true;
 }
 
 void MazePrinter::PrintInConsole(Maze* maze, std::optional<cref_type<path_container_type>> path)
