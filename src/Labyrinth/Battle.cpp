@@ -1,6 +1,7 @@
 #include "Battle.h"
 
 #include <thread>
+#include <future>
 
 void BattleContext::Reset()
 {
@@ -9,12 +10,22 @@ void BattleContext::Reset()
     m_closed = false;
 }
 
+static void waitForInput(BattleContext* context)
+{
+    char c;
+    std::cin >> c;
+    context->Close();
+}
+
 void BattleContext::Run()
 {
     using namespace std::chrono_literals;
     
     std::array<size_t, static_cast<size_t>(Robots::UNKNOWN)> steps;
     steps.fill(-1);
+
+    std::future inputFuture = std::async(std::launch::async, waitForInput, this);
+
     while (!ShouldClose())
     {
         std::cout << "[LOG]: Battle continues!\n";
@@ -62,9 +73,18 @@ void BattleContext::Run()
 
     std::cout << "[LOG]: Enter any symbol to return to the menu\n";
 
-    char c;
-    std::cin >> c;
+    // If thread is still awake, then we want to wait for it, otherwise wait for input on current thread
+    auto status = inputFuture.wait_for(0ms);
+    if (status == std::future_status::timeout)
+    {
+        inputFuture.wait();
+    }
+    else
+    {
+        char c;
+        std::cin >> c;
+    }
+
     CLEAR_SCREEN();
-    
     Reset();
 }
